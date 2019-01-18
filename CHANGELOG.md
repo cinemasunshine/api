@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 人物インターフェースを拡張
+
 ### Deprecated
 
 ### Removed

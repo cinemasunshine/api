@@ -16,6 +16,7 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const profile_1 = require("./me/profile");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const requireMember_1 = require("../../middlewares/requireMember");
@@ -40,8 +41,10 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
 });
 meRouter.use(authentication_1.default);
 meRouter.use(requireMember_1.default); // 自分のリソースへのアクセスなので、もちろんログイン必須
+meRouter.use('/profile', profile_1.default);
 /**
  * 連絡先検索
+ * @deprecated
  */
 meRouter.get('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -55,6 +58,7 @@ meRouter.get('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin
 }));
 /**
  * 会員プロフィール更新
+ * @deprecated
  */
 meRouter.put('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), (__1, __2, next) => {
     next();
