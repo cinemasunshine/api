@@ -62,8 +62,9 @@ npm start
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`                   | true                  |             | 進行取引レート制限閾値                 |
 | `RESOURECE_SERVER_IDENTIFIER`                        | true                  |             | リソースサーバーとしての固有識別子     |
 | `TOKEN_ISSUERS`                                      | true                  |             | トークン発行者リスト(コンマつなぎ)     |
-| `WAITER_ENDPOINT`                                    | true                  |             | WAITER endpoint                        |
+| `WAITER_DISABLED`                                    | false                 | 1 or 0      | WAITER Disable Flag                    |
 | `WAITER_SECRET`                                      | true                  |             | WAITER許可証トークン秘密鍵             |
+| `WAITER_PASSPORT_ISSUER`                             | true                  |             | WAITER Pasport Issuer                  |
 | `ORDER_INQUIRY_ENDPOINT`                             | true                  |             | 注文照会URLエンドポイント              |
 | `BASIC_AUTH_NAME`                                    | false                 |             | Basic authentication user name         |
 | `BASIC_AUTH_PASS`                                    | false                 |             | Basic authentication user password     |
