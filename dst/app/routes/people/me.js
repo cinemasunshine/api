@@ -16,6 +16,7 @@ const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const orders_1 = require("./me/orders");
 const profile_1 = require("./me/profile");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -41,6 +42,7 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
 });
 meRouter.use(authentication_1.default);
 meRouter.use(requireMember_1.default); // 自分のリソースへのアクセスなので、もちろんログイン必須
+meRouter.use('/orders', orders_1.default);
 meRouter.use('/profile', profile_1.default);
 /**
  * 連絡先検索

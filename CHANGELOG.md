@@ -9,13 +9,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - WAITER無効化フラグを追加
+
 ```
 set WAITER_DISABLED=1
 ```
 
+- 自分の注文検索を追加
+
 ### Changed
 
 - 人物インターフェースを拡張
+- 注文の決済方法にムビチケを追加するように変更
 
 ### Deprecated
 
