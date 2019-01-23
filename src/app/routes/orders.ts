@@ -43,6 +43,7 @@ ordersRouter.post(
             };
             const repository = new sskts.repository.Order(sskts.mongoose.connection);
             const order = await repository.findByOrderInquiryKey(key);
+            // const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
             res.json(order);
         } catch (error) {
             next(error);

@@ -23,6 +23,8 @@ set WAITER_DISABLED=1
 - ポイント口座決済時の注文に対する決済IDを、口座取引IDから口座番号へ変更
 - 予約インターフェースに予約ID属性を追加
 - 予約インターフェースに対する予約番号の割り当てをCOA予約番号そのものに変更
+- SSKTSエラーをCinerinoエラーへ変更
+- install @motionpicture/sskts-domain@27.0.0
 
 ### Deprecated
 

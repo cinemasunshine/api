@@ -40,11 +40,11 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
         // エラー配列が入ってくることもある
         if (Array.isArray(err)) {
             apiError = new APIError(ssktsError2httpStatusCode(err[0]), err);
-        } else if (err instanceof sskts.factory.errors.SSKTS) {
+        } else if (err instanceof sskts.factory.errors.Cinerino) {
             apiError = new APIError(ssktsError2httpStatusCode(err), [err]);
         } else {
             // 500
-            apiError = new APIError(INTERNAL_SERVER_ERROR, [new sskts.factory.errors.SSKTS(<any>'InternalServerError', err.message)]);
+            apiError = new APIError(INTERNAL_SERVER_ERROR, [new sskts.factory.errors.Cinerino(<any>'InternalServerError', err.message)]);
         }
     }
 
@@ -54,10 +54,10 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
 };
 
 /**
- * SSKTSエラーをHTTPステータスコードへ変換する
- * @param err SSKTSエラー
+ * CinerinoエラーをHTTPステータスコードへ変換する
+ * @param err Cinerinoエラー
  */
-function ssktsError2httpStatusCode(err: sskts.factory.errors.SSKTS) {
+function ssktsError2httpStatusCode(err: sskts.factory.errors.Cinerino) {
     let statusCode = BAD_REQUEST;
 
     switch (true) {

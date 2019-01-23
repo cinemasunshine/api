@@ -27,7 +27,7 @@ describe('notFoundHandler.default()', () => {
         sandbox.restore();
     });
 
-    it('SSKTSエラーと共にnextが呼ばれるはず', async () => {
+    it('Cinerinoエラーと共にnextが呼ばれるはず', async () => {
         const params = {
             req: {},
             res: {},
