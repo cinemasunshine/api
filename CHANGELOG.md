@@ -25,6 +25,7 @@ set WAITER_DISABLED=1
 - 予約インターフェースに対する予約番号の割り当てをCOA予約番号そのものに変更
 - SSKTSエラーをCinerinoエラーへ変更
 - install @motionpicture/sskts-domain@27.0.0
+- 決済方法承認アクションインターフェースを強化
 
 ### Deprecated
 

@@ -363,12 +363,15 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                orderId: req.body.orderId,
-                amount: req.body.amount,
-                method: req.body.method,
-                creditCard: creditCard
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                object: {
+                    typeOf: sskts.factory.paymentMethodType.CreditCard,
+                    orderId: req.body.orderId,
+                    amount: req.body.amount,
+                    method: req.body.method,
+                    creditCard: creditCard
+                }
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
