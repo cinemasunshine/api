@@ -21,11 +21,11 @@ const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const eventsRouter = express_1.Router();
 eventsRouter.use(authentication_1.default);
-eventsRouter.get('/individualScreeningEvent/:identifier', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+eventsRouter.get('/individualScreeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)({
+        yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
             event: new sskts.repository.Event(sskts.mongoose.connection),
-            itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
+            itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
         }).then((event) => {
             res.json(event);
         });
@@ -42,7 +42,7 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient());
+        const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
