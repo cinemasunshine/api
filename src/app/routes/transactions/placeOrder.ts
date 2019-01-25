@@ -491,7 +491,7 @@ placeOrderTransactionsRouter.delete(
 );
 
 /**
- * Pecorino口座確保
+ * ポイント口座確保
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/pecorino',
@@ -510,11 +510,18 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-                transactionId: req.params.transactionId,
-                amount: parseInt(req.body.amount, 10),
-                fromAccountNumber: req.body.fromAccountNumber,
-                notes: req.body.notes
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                object: {
+                    typeOf: sskts.factory.paymentMethodType.Account,
+                    amount: Number(req.body.amount),
+                    fromAccount: {
+                        accountType: sskts.factory.accountType.Point,
+                        accountNumber: req.body.fromAccountNumber
+                    },
+                    notes: req.body.notes
+                }
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 organization: new sskts.repository.Organization(sskts.mongoose.connection),
@@ -530,7 +537,7 @@ placeOrderTransactionsRouter.post(
 );
 
 /**
- * Pecorino口座承認取消
+ * ポイント口座承認取消
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId',
@@ -544,10 +551,10 @@ placeOrderTransactionsRouter.delete(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+            await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
+                id: req.params.actionId,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId }
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),

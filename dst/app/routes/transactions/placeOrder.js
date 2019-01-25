@@ -396,7 +396,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
     }
 }));
 /**
- * Pecorino口座確保
+ * ポイント口座確保
  */
 placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMethod/pecorino', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, __, next) => {
     req.checkBody('amount', 'invalid amount').notEmpty().withMessage('amount is required').isInt();
@@ -409,11 +409,18 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-            transactionId: req.params.transactionId,
-            amount: parseInt(req.body.amount, 10),
-            fromAccountNumber: req.body.fromAccountNumber,
-            notes: req.body.notes
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId },
+            object: {
+                typeOf: sskts.factory.paymentMethodType.Account,
+                amount: Number(req.body.amount),
+                fromAccount: {
+                    accountType: sskts.factory.accountType.Point,
+                    accountNumber: req.body.fromAccountNumber
+                },
+                notes: req.body.notes
+            }
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             organization: new sskts.repository.Organization(sskts.mongoose.connection),
@@ -428,7 +435,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
     }
 }));
 /**
- * Pecorino口座承認取消
+ * ポイント口座承認取消
  */
 placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -437,10 +444,10 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMe
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
-            agentId: req.user.sub,
-            transactionId: req.params.transactionId,
-            actionId: req.params.actionId
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
+            id: req.params.actionId,
+            agent: { id: req.user.sub },
+            transaction: { id: req.params.transactionId }
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
