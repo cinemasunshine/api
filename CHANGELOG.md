@@ -26,6 +26,7 @@ set WAITER_DISABLED=1
 - SSKTSエラーをCinerinoエラーへ変更
 - install @motionpicture/sskts-domain@27.0.0
 - 決済方法承認アクションインターフェースを強化
+- ムビチケを決済方法として解釈し、注文における顧客の発生金額が0となるように変更
 
 ### Deprecated
 
