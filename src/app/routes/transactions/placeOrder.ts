@@ -677,7 +677,10 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-            await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, req.params.transactionId);
+            await transactionRepo.cancel({
+                typeOf: sskts.factory.transactionType.PlaceOrder,
+                id: req.params.transactionId
+            });
             debug('transaction canceled.');
             res.status(NO_CONTENT).end();
         } catch (error) {

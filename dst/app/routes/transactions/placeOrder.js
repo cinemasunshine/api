@@ -544,7 +544,10 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
 placeOrderTransactionsRouter.post('/:transactionId/cancel', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-        yield transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, req.params.transactionId);
+        yield transactionRepo.cancel({
+            typeOf: sskts.factory.transactionType.PlaceOrder,
+            id: req.params.transactionId
+        });
         debug('transaction canceled.');
         res.status(http_status_1.NO_CONTENT).end();
     }
