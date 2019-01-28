@@ -1,18 +1,12 @@
-# SSKTS API web application
+# Cinemasunshine API Web Application
 
-[![CircleCI](https://circleci.com/gh/motionpicture/sskts-api.svg?style=svg&circle-token=9a0b1ea029ad57360986a0e17fdc74948e78575e)](https://circleci.com/gh/motionpicture/sskts-api)
+[![CircleCI](https://circleci.com/gh/cinemasunshine/api.svg?style=svg)](https://circleci.com/gh/cinemasunshine/api)
 
 ## Getting Started
 
-### インフラ
-
-基本的にNode.jsのウェブアプリケーション。
-ウェブサーバーとしては、AzureのWebApps or GCPのAppEngine or AWSのelastic beanstalkを想定。
-全てで動くように開発していくことが望ましい。
-
 ### 言語
 
-実態としては、linuxあるいはwindows上でのnode.js。プログラミング言語としては、TypeScript。
+実態としては、linuxあるいはwindows上でのNode.js。プログラミング言語としては、TypeScript。
 
 * [TypeScript](https://www.typescriptlang.org/)
 
@@ -85,10 +79,6 @@ npm start
 * [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
 
 `npm run check`でチェック実行。
-
-## パッケージ脆弱性のチェック
-
-* [nsp](https://www.npmjs.com/package/nsp)
 
 ## clean
 

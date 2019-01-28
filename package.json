@@ -26,7 +26,7 @@
     "request-promise-native": "^1.0.5",
     "winston": "^2.4.4"
   },
-  "description": "SSKTS API web application",
+  "description": "Cinemasunshine API Web Application",
   "devDependencies": {
     "@types/body-parser": "^1.17.0",
     "@types/clear-require": "^2.0.0",
@@ -96,5 +96,5 @@
     "version": "git add -A",
     "postversion": "git push origin --tags"
   },
-  "version": "11.3.4"
+  "version": "12.0.0"
 }
