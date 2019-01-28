@@ -69,7 +69,7 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         next(error);
     }
 }));
-returnOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
         const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);

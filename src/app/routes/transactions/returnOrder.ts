@@ -76,7 +76,7 @@ returnOrderTransactionsRouter.post(
     }
 );
 
-returnOrderTransactionsRouter.post(
+returnOrderTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['admin']),
     validator,
