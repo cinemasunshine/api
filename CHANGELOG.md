@@ -15,6 +15,7 @@ set WAITER_DISABLED=1
 ```
 
 - 自分の注文検索を追加
+- 販売者ルーターを追加
 
 ### Changed
 

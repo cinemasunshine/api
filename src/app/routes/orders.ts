@@ -52,22 +52,63 @@ ordersRouter.post(
 );
 
 /**
+ * 注文に対するアクション検索
+ */
+ordersRouter.get(
+    '/:orderNumber/actions',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+            const actions = await actionRepo.searchByOrderNumber({
+                orderNumber: req.params.orderNumber,
+                sort: req.query.sort
+            });
+            res.json(actions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
  * 注文検索
  */
 ordersRouter.get(
     '',
     permitScopes(['admin']),
     (req, __2, next) => {
-        req.checkQuery('orderDateFrom').optional().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
-        req.checkQuery('orderDateThrough').optional().withMessage('required').isISO8601().withMessage('must be ISO8601').toDate();
+        req.checkQuery('orderDateFrom')
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
+        req.checkQuery('orderDateThrough')
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionFrom')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.inSessionThrough')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.startFrom')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         req.checkQuery('acceptedOffers.itemOffered.reservationFor.startThrough')
-            .optional().isISO8601().withMessage('must be ISO8601').toDate();
+            .optional()
+            .isISO8601()
+            .withMessage('must be ISO8601')
+            .toDate();
         next();
     },
     validator,
