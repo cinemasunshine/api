@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v12.0.0 - 2019-01-28
+
+### Added
+
 - WAITER無効化フラグを追加
 
 ```
@@ -29,14 +43,6 @@ set WAITER_DISABLED=1
 - 決済方法承認アクションインターフェースを強化
 - ムビチケを決済方法として解釈し、注文における顧客の発生金額が0となるように変更
 - 注文番号で返品取引を開始できるように変更
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## v11.3.4 - 2018-12-25
 
