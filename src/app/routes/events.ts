@@ -15,14 +15,14 @@ const eventsRouter = Router();
 eventsRouter.use(authentication);
 
 eventsRouter.get(
-    '/individualScreeningEvent/:identifier',
+    '/individualScreeningEvent/:id',
     permitScopes(['aws.cognito.signin.user.admin', 'events', 'events.read-only']),
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.identifier)({
+            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
                 event: new sskts.repository.Event(sskts.mongoose.connection),
-                itemAvailability: new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient())
+                itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
             }).then((event) => {
                 res.json(event);
             });
@@ -44,9 +44,9 @@ eventsRouter.get(
     async (req, res, next) => {
         try {
             const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
-            const itemAvailabilityRepo = new sskts.repository.itemAvailability.IndividualScreeningEvent(redis.getClient());
+            const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
-            const searchConditions: sskts.factory.event.individualScreeningEvent.ISearchConditions = {
+            const searchConditions: sskts.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,

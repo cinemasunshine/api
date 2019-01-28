@@ -2,12 +2,10 @@
  * 注文返品取引ルーター
  */
 import * as sskts from '@motionpicture/sskts-domain';
-import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
-import { query } from 'express-validator/check';
-import { CREATED } from 'http-status';
-import * as moment from 'moment';
+import { body, query } from 'express-validator/check';
+import { NO_CONTENT } from 'http-status';
 
 const returnOrderTransactionsRouter = Router();
 
@@ -15,33 +13,53 @@ import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import validator from '../../middlewares/validator';
 
-const debug = createDebug('sskts-api:returnOrderTransactionsRouter');
-
 returnOrderTransactionsRouter.use(authentication);
 
 returnOrderTransactionsRouter.post(
     '/start',
     permitScopes(['admin']),
-    (req, _, next) => {
-        req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required').isISO8601();
-        req.checkBody('transactionId', 'invalid transactionId').notEmpty().withMessage('transactionId is required');
-
-        next();
-    },
+    ...[
+        body('expires')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+            .isISO8601()
+            .toDate(),
+        body('object.order.orderNumber')
+            .not()
+            .isEmpty()
+            .withMessage((_, options) => `${options.path} is required`)
+    ],
     validator,
     async (req, res, next) => {
         try {
             const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
             const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
             const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+
+            let order: sskts.factory.order.IOrder | undefined;
+            let returnableOrder: sskts.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
+
+            // APIユーザーが管理者の場合、顧客情報を自動取得
+            order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
+            returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
+
             const transaction = await sskts.service.transaction.returnOrder.start({
-                expires: moment(req.body.expires).toDate(),
-                agentId: req.user.sub,
-                transactionId: req.body.transactionId,
-                clientUser: req.user,
-                cancellationFee: 0,
-                forcibly: true,
-                reason: sskts.factory.transaction.returnOrder.Reason.Seller
+                expires: req.body.expires,
+                agent: {
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ]
+                },
+                object: {
+                    order: returnableOrder,
+                    clientUser: req.user,
+                    cancellationFee: 0,
+                    // forcibly: true,
+                    reason: sskts.factory.transaction.returnOrder.Reason.Seller
+                }
             })({
                 action: actionRepo,
                 transaction: transactionRepo,
@@ -58,7 +76,7 @@ returnOrderTransactionsRouter.post(
     }
 );
 
-returnOrderTransactionsRouter.post(
+returnOrderTransactionsRouter.put(
     '/:transactionId/confirm',
     permitScopes(['admin']),
     validator,
@@ -67,17 +85,17 @@ returnOrderTransactionsRouter.post(
             const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
             const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
             const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-            const transactionResult = await sskts.service.transaction.returnOrder.confirm(
-                req.user.sub,
-                req.params.transactionId
-            )({
+            await sskts.service.transaction.returnOrder.confirm({
+                id: req.params.transactionId,
+                agent: { id: req.user.sub }
+            })({
                 action: actionRepo,
                 transaction: transactionRepo,
                 organization: organizationRepo
             });
-            debug('transaction confirmed', transactionResult);
 
-            res.status(CREATED).json(transactionResult);
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

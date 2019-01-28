@@ -1,18 +1,12 @@
-# SSKTS API web application
+# Cinemasunshine API Web Application
 
-[![CircleCI](https://circleci.com/gh/motionpicture/sskts-api.svg?style=svg&circle-token=9a0b1ea029ad57360986a0e17fdc74948e78575e)](https://circleci.com/gh/motionpicture/sskts-api)
+[![CircleCI](https://circleci.com/gh/cinemasunshine/api.svg?style=svg)](https://circleci.com/gh/cinemasunshine/api)
 
 ## Getting Started
 
-### インフラ
-
-基本的にNode.jsのウェブアプリケーション。
-ウェブサーバーとしては、AzureのWebApps or GCPのAppEngine or AWSのelastic beanstalkを想定。
-全てで動くように開発していくことが望ましい。
-
 ### 言語
 
-実態としては、linuxあるいはwindows上でのnode.js。プログラミング言語としては、TypeScript。
+実態としては、linuxあるいはwindows上でのNode.js。プログラミング言語としては、TypeScript。
 
 * [TypeScript](https://www.typescriptlang.org/)
 
@@ -62,8 +56,9 @@ npm start
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`                   | true                  |             | 進行取引レート制限閾値                 |
 | `RESOURECE_SERVER_IDENTIFIER`                        | true                  |             | リソースサーバーとしての固有識別子     |
 | `TOKEN_ISSUERS`                                      | true                  |             | トークン発行者リスト(コンマつなぎ)     |
-| `WAITER_ENDPOINT`                                    | true                  |             | WAITER endpoint                        |
+| `WAITER_DISABLED`                                    | false                 | 1 or 0      | WAITER Disable Flag                    |
 | `WAITER_SECRET`                                      | true                  |             | WAITER許可証トークン秘密鍵             |
+| `WAITER_PASSPORT_ISSUER`                             | true                  |             | WAITER Pasport Issuer                  |
 | `ORDER_INQUIRY_ENDPOINT`                             | true                  |             | 注文照会URLエンドポイント              |
 | `BASIC_AUTH_NAME`                                    | false                 |             | Basic authentication user name         |
 | `BASIC_AUTH_PASS`                                    | false                 |             | Basic authentication user password     |
@@ -84,10 +79,6 @@ npm start
 * [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
 
 `npm run check`でチェック実行。
-
-## パッケージ脆弱性のチェック
-
-* [nsp](https://www.npmjs.com/package/nsp)
 
 ## clean
 

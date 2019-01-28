@@ -7,10 +7,9 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
-import { CREATED, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS } from 'http-status';
+import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
-import * as request from 'request-promise-native';
 
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
@@ -18,8 +17,8 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-const placeOrderTransactionsRouter = Router();
 const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
+
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_API_CLIENT_ID,
@@ -28,6 +27,7 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 
+const WAITER_DISABLED = process.env.WAITER_DISABLED === '1';
 // tslint:disable-next-line:no-magic-numbers
 const AGGREGATION_UNIT_IN_SECONDS = parseInt(<string>process.env.TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS, 10);
 // tslint:disable-next-line:no-magic-numbers
@@ -58,6 +58,7 @@ const rateLimit4transactionInProgress =
         scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
     });
 
+const placeOrderTransactionsRouter = Router();
 placeOrderTransactionsRouter.use(authentication);
 
 placeOrderTransactionsRouter.post(
@@ -68,39 +69,17 @@ placeOrderTransactionsRouter.post(
         req.checkBody('expires', 'invalid expires').notEmpty().withMessage('expires is required');
         req.checkBody('sellerId', 'invalid sellerId').notEmpty().withMessage('sellerId is required');
 
+        if (!WAITER_DISABLED) {
+            req.checkBody('passportToken', 'invalid passport token')
+                .notEmpty()
+                .withMessage('passportToken is required');
+        }
+
         next();
     },
     validator,
     async (req, res, next) => {
         try {
-            let passportToken = req.body.passportToken;
-
-            // 許可証トークンパラメーターがなければ、WAITERで許可証を取得
-            if (passportToken === undefined) {
-                const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-                const seller = await organizationRepo.findById(sskts.factory.organizationType.MovieTheater, req.body.sellerId);
-
-                try {
-                    passportToken = await request.post(
-                        `${process.env.WAITER_ENDPOINT}/passports`,
-                        {
-                            body: {
-                                scope: `placeOrderTransaction.${seller.identifier}`
-                            },
-                            json: true
-                        }
-                    ).then((body) => body.token);
-                } catch (error) {
-                    if (error.statusCode === NOT_FOUND) {
-                        throw new sskts.factory.errors.NotFound('sellerId', 'Seller does not exist.');
-                    } else if (error.statusCode === TOO_MANY_REQUESTS) {
-                        throw new sskts.factory.errors.RateLimitExceeded('PlaceOrder transactions rate limit exceeded.');
-                    } else {
-                        throw new sskts.factory.errors.ServiceUnavailable('Waiter service temporarily unavailable.');
-                    }
-                }
-            }
-
             // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
             const expires = (/^\d+$/.test(req.body.expires))
                 // tslint:disable-next-line:no-magic-numbers
@@ -114,7 +93,7 @@ placeOrderTransactionsRouter.post(
                     id: req.body.sellerId
                 },
                 clientUser: req.user,
-                passportToken: passportToken
+                passportToken: req.body.passportToken
             })({
                 organization: new sskts.repository.Organization(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
@@ -384,12 +363,15 @@ placeOrderTransactionsRouter.post(
 
             debug('authorizing credit card...', req.body.creditCard);
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                orderId: req.body.orderId,
-                amount: req.body.amount,
-                method: req.body.method,
-                creditCard: creditCard
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                object: {
+                    typeOf: sskts.factory.paymentMethodType.CreditCard,
+                    orderId: req.body.orderId,
+                    amount: req.body.amount,
+                    method: req.body.method,
+                    creditCard: creditCard
+                }
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
@@ -509,7 +491,7 @@ placeOrderTransactionsRouter.delete(
 );
 
 /**
- * Pecorino口座確保
+ * ポイント口座確保
  */
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/paymentMethod/pecorino',
@@ -528,11 +510,18 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.create({
-                transactionId: req.params.transactionId,
-                amount: parseInt(req.body.amount, 10),
-                fromAccountNumber: req.body.fromAccountNumber,
-                notes: req.body.notes
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                object: {
+                    typeOf: sskts.factory.paymentMethodType.Account,
+                    amount: Number(req.body.amount),
+                    fromAccount: {
+                        accountType: sskts.factory.accountType.Point,
+                        accountNumber: req.body.fromAccountNumber
+                    },
+                    notes: req.body.notes
+                }
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 organization: new sskts.repository.Organization(sskts.mongoose.connection),
@@ -548,7 +537,7 @@ placeOrderTransactionsRouter.post(
 );
 
 /**
- * Pecorino口座承認取消
+ * ポイント口座承認取消
  */
 placeOrderTransactionsRouter.delete(
     '/:transactionId/actions/authorize/paymentMethod/pecorino/:actionId',
@@ -562,10 +551,10 @@ placeOrderTransactionsRouter.delete(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.pecorino.cancel({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+            await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
+                id: req.params.actionId,
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId }
             })({
                 action: new sskts.repository.Action(sskts.mongoose.connection),
                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
@@ -688,7 +677,10 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
-            await transactionRepo.cancel(sskts.factory.transactionType.PlaceOrder, req.params.transactionId);
+            await transactionRepo.cancel({
+                typeOf: sskts.factory.transactionType.PlaceOrder,
+                id: req.params.transactionId
+            });
             debug('transaction canceled.');
             res.status(NO_CONTENT).end();
         } catch (error) {

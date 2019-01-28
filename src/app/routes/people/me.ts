@@ -7,6 +7,9 @@ import { Router } from 'express';
 import { ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
+import ordersRouter from './me/orders';
+import profileRouter from './me/profile';
+
 import authentication from '../../middlewares/authentication';
 import permitScopes from '../../middlewares/permitScopes';
 import requireMember from '../../middlewares/requireMember';
@@ -36,8 +39,12 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
 meRouter.use(authentication);
 meRouter.use(requireMember); // 自分のリソースへのアクセスなので、もちろんログイン必須
 
+meRouter.use('/orders', ordersRouter);
+meRouter.use('/profile', profileRouter);
+
 /**
  * 連絡先検索
+ * @deprecated
  */
 meRouter.get(
     '/contacts',
@@ -55,6 +62,7 @@ meRouter.get(
 
 /**
  * 会員プロフィール更新
+ * @deprecated
  */
 meRouter.put(
     '/contacts',

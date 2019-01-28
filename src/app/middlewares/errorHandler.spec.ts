@@ -75,7 +75,7 @@ describe('errorHandler.default()', () => {
         new sskts.factory.errors.AlreadyInUse('', []),
         new sskts.factory.errors.ServiceUnavailable()
     ].forEach((err) => {
-        it(`SSKTSErrorと共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
+        it(`CinerinoErrorと共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
             const params = {
                 err: err,
                 req: {},
@@ -110,7 +110,7 @@ describe('errorHandler.default()', () => {
         new sskts.factory.errors.NotImplemented(),
         new sskts.factory.errors.ServiceUnavailable()
     ].forEach((err) => {
-        it(`SSKTSError配列と共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
+        it(`CinerinoError配列と共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
             const params = {
                 err: [err],
                 req: {},
