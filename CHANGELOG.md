@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- 販売者編集エンドポイントの汎用性強化
-- /events/individualScreeningEvent を /events/screeningEvent のエイリアスとして非推奨に設定
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v12.0.1 - 2019-01-29
+
+### Changed
+
+- 販売者編集エンドポイントの汎用性強化
+- /events/individualScreeningEvent を /events/screeningEvent のエイリアスとして非推奨に設定
 
 ## v12.0.0 - 2019-01-28
 
