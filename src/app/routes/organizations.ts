@@ -13,6 +13,8 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
+type ICreditCardPaymentAccepted = sskts.factory.organization.IPaymentAccepted<sskts.factory.paymentMethodType.CreditCard>;
+
 organizationsRouter.use(authentication);
 
 organizationsRouter.get(
@@ -22,9 +24,19 @@ organizationsRouter.get(
     async (req, res, next) => {
         try {
             const repository = new sskts.repository.Organization(sskts.mongoose.connection);
-            await repository.findMovieTheaterByBranchCode(req.params.branchCode).then((movieTheater) => {
-                res.json(movieTheater);
-            });
+            const movieTheater = await repository.findMovieTheaterByBranchCode(req.params.branchCode);
+
+            // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
+            if (Array.isArray(movieTheater.paymentAccepted)) {
+                const creditCardPaymentAccepted = <ICreditCardPaymentAccepted>movieTheater.paymentAccepted.find((p) => {
+                    return p.paymentMethodType === sskts.factory.paymentMethodType.CreditCard;
+                });
+                if (creditCardPaymentAccepted !== undefined) {
+                    movieTheater.gmoInfo = creditCardPaymentAccepted.gmoInfo;
+                }
+            }
+
+            res.json(movieTheater);
         } catch (error) {
             next(error);
         }
@@ -37,10 +49,21 @@ organizationsRouter.get(
     async (__, res, next) => {
         try {
             const repository = new sskts.repository.Organization(sskts.mongoose.connection);
-            await repository.searchMovieTheaters({
-            }).then((movieTheaters) => {
-                res.json(movieTheaters);
+            const movieTheaters = await repository.searchMovieTheaters({});
+
+            movieTheaters.forEach((movieTheater) => {
+                // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
+                if (Array.isArray(movieTheater.paymentAccepted)) {
+                    const creditCardPaymentAccepted = <ICreditCardPaymentAccepted>movieTheater.paymentAccepted.find((p) => {
+                        return p.paymentMethodType === sskts.factory.paymentMethodType.CreditCard;
+                    });
+                    if (creditCardPaymentAccepted !== undefined) {
+                        movieTheater.gmoInfo = creditCardPaymentAccepted.gmoInfo;
+                    }
+                }
             });
+
+            res.json(movieTheaters);
         } catch (error) {
             next(error);
         }
