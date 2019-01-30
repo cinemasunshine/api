@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Changed
 
 - 組織のgmoInfoをpaymentAcceptedから変換するように対応
+- install @motionpicture/sskts-domain@28.0.0
+- 注文照会キーを使わずに注文を照会するように変更
 
 ### Deprecated
 

@@ -41,8 +41,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
         const repository = new sskts.repository.Order(sskts.mongoose.connection);
-        const order = yield repository.findByOrderInquiryKey(key);
-        // const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
+        const order = yield repository.findByLocationBranchCodeAndReservationNumber(key);
         res.json(order);
     }
     catch (error) {
