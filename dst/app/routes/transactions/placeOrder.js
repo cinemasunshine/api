@@ -90,7 +90,7 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
             clientUser: req.user,
             passportToken: req.body.passportToken
         })({
-            organization: new sskts.repository.Organization(sskts.mongoose.connection),
+            seller: new sskts.repository.Seller(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
         });
         // tslint:disable-next-line:no-string-literal
@@ -265,7 +265,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/pro
 //             })({
 //                 action: new sskts.repository.Action(sskts.mongoose.connection),
 //                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-//                 organization: new sskts.repository.Organization(sskts.mongoose.connection)
+//                 organization: new sskts.repository.Seller(sskts.mongoose.connection)
 //             });
 //             res.status(ACCEPTED).json({
 //                 id: action.id
@@ -304,7 +304,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            organization: new sskts.repository.Organization(sskts.mongoose.connection)
+            seller: new sskts.repository.Seller(sskts.mongoose.connection)
         });
         res.status(http_status_1.CREATED).json({
             id: action.id
@@ -423,7 +423,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             }
         })({
             action: new sskts.repository.Action(sskts.mongoose.connection),
-            organization: new sskts.repository.Organization(sskts.mongoose.connection),
+            seller: new sskts.repository.Seller(sskts.mongoose.connection),
             ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             transferTransactionService: transferService
@@ -529,7 +529,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             action: new sskts.repository.Action(sskts.mongoose.connection),
             transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
             orderNumber: new sskts.repository.OrderNumber(redis.getClient()),
-            organization: new sskts.repository.Organization(sskts.mongoose.connection)
+            seller: new sskts.repository.Seller(sskts.mongoose.connection)
         });
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json(order);

@@ -412,7 +412,7 @@ meRouter.put(
                 programMembershipId: req.body.programMembershipId,
                 offerIdentifier: req.body.offerIdentifier
             })({
-                organization: new sskts.repository.Organization(sskts.mongoose.connection),
+                seller: new sskts.repository.Seller(sskts.mongoose.connection),
                 programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),
                 task: new sskts.repository.Task(sskts.mongoose.connection)
             });

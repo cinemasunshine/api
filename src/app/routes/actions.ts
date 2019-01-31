@@ -28,7 +28,7 @@ actionsRouter.post(
                 ticketToken: req.body.ticketToken
             };
 
-            const action = await new sskts.repository.action.Print(sskts.mongoose.connection).printTicket(
+            const action = await new sskts.repository.Action(sskts.mongoose.connection).printTicket(
                 req.user.sub,
                 ticket
             );
@@ -48,7 +48,7 @@ actionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actions = await new sskts.repository.action.Print(sskts.mongoose.connection).searchPrintTicket({
+            const actions = await new sskts.repository.Action(sskts.mongoose.connection).searchPrintTicket({
                 agentId: req.user.sub,
                 ticketToken: req.query.ticketToken
             });

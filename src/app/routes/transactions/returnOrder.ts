@@ -83,7 +83,7 @@ returnOrderTransactionsRouter.put(
     async (req, res, next) => {
         try {
             const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-            const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
             const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
             await sskts.service.transaction.returnOrder.confirm({
                 id: req.params.transactionId,
@@ -91,7 +91,7 @@ returnOrderTransactionsRouter.put(
             })({
                 action: actionRepo,
                 transaction: transactionRepo,
-                organization: organizationRepo
+                seller: sellerRepo
             });
 
             res.status(NO_CONTENT)

@@ -13,7 +13,7 @@ import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-type ICreditCardPaymentAccepted = sskts.factory.organization.IPaymentAccepted<sskts.factory.paymentMethodType.CreditCard>;
+type ICreditCardPaymentAccepted = sskts.factory.seller.IPaymentAccepted<sskts.factory.paymentMethodType.CreditCard>;
 
 organizationsRouter.use(authentication);
 
@@ -23,8 +23,14 @@ organizationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const repository = new sskts.repository.Organization(sskts.mongoose.connection);
-            const movieTheater = await repository.findMovieTheaterByBranchCode(req.params.branchCode);
+            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const movieTheaters = await sellerRepo.search({
+                location: { branchCodes: [req.params.branchCode] }
+            });
+            const movieTheater = movieTheaters.shift();
+            if (movieTheater === undefined) {
+                throw new sskts.factory.errors.NotFound('Organization');
+            }
 
             // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
             if (Array.isArray(movieTheater.paymentAccepted)) {
@@ -32,7 +38,7 @@ organizationsRouter.get(
                     return p.paymentMethodType === sskts.factory.paymentMethodType.CreditCard;
                 });
                 if (creditCardPaymentAccepted !== undefined) {
-                    movieTheater.gmoInfo = creditCardPaymentAccepted.gmoInfo;
+                    (<any>movieTheater).gmoInfo = creditCardPaymentAccepted.gmoInfo;
                 }
             }
 
@@ -48,8 +54,8 @@ organizationsRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const repository = new sskts.repository.Organization(sskts.mongoose.connection);
-            const movieTheaters = await repository.searchMovieTheaters({});
+            const repository = new sskts.repository.Seller(sskts.mongoose.connection);
+            const movieTheaters = await repository.search({});
 
             movieTheaters.forEach((movieTheater) => {
                 // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
@@ -58,7 +64,7 @@ organizationsRouter.get(
                         return p.paymentMethodType === sskts.factory.paymentMethodType.CreditCard;
                     });
                     if (creditCardPaymentAccepted !== undefined) {
-                        movieTheater.gmoInfo = creditCardPaymentAccepted.gmoInfo;
+                        (<any>movieTheater).gmoInfo = creditCardPaymentAccepted.gmoInfo;
                     }
                 }
             });

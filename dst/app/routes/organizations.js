@@ -22,8 +22,14 @@ const validator_1 = require("../middlewares/validator");
 organizationsRouter.use(authentication_1.default);
 organizationsRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new sskts.repository.Organization(sskts.mongoose.connection);
-        const movieTheater = yield repository.findMovieTheaterByBranchCode(req.params.branchCode);
+        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+        const movieTheaters = yield sellerRepo.search({
+            location: { branchCodes: [req.params.branchCode] }
+        });
+        const movieTheater = movieTheaters.shift();
+        if (movieTheater === undefined) {
+            throw new sskts.factory.errors.NotFound('Organization');
+        }
         // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
         if (Array.isArray(movieTheater.paymentAccepted)) {
             const creditCardPaymentAccepted = movieTheater.paymentAccepted.find((p) => {
@@ -41,8 +47,8 @@ organizationsRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aw
 }));
 organizationsRouter.get('/movieTheater', permitScopes_1.default(['aws.cognito.signin.user.admin', 'organizations', 'organizations.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new sskts.repository.Organization(sskts.mongoose.connection);
-        const movieTheaters = yield repository.searchMovieTheaters({});
+        const repository = new sskts.repository.Seller(sskts.mongoose.connection);
+        const movieTheaters = yield repository.search({});
         movieTheaters.forEach((movieTheater) => {
             // 互換性維持のためgmoInfoをpaymentAcceptedから情報追加
             if (Array.isArray(movieTheater.paymentAccepted)) {
