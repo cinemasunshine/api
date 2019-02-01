@@ -69,10 +69,24 @@ meRouter.get('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin
  */
 meRouter.put('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
+        // 日本語フォーマットで電話番号が渡される想定なので変換
+        let formatedPhoneNumber;
+        try {
+            const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+            if (!phoneUtil.isValidNumber(phoneNumber)) {
+                throw new Error('Invalid phone number format.');
+            }
+            formatedPhoneNumber = phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164);
+        }
+        catch (error) {
+            next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
+            return;
+        }
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
-            profile: req.body
+            profile: Object.assign({}, req.body, { telephone: formatedPhoneNumber })
         });
         res.status(http_status_1.NO_CONTENT)
             .end();

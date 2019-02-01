@@ -77,10 +77,29 @@ meRouter.put(
     validator,
     async (req, res, next) => {
         try {
+            // 日本語フォーマットで電話番号が渡される想定なので変換
+            let formatedPhoneNumber: string;
+            try {
+                const phoneUtil = PhoneNumberUtil.getInstance();
+                const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+                if (!phoneUtil.isValidNumber(phoneNumber)) {
+                    throw new Error('Invalid phone number format.');
+                }
+
+                formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+            } catch (error) {
+                next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
+
+                return;
+            }
+
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
-                profile: req.body
+                profile: {
+                    ...req.body,
+                    telephone: formatedPhoneNumber
+                }
             });
             res.status(NO_CONTENT)
                 .end();
