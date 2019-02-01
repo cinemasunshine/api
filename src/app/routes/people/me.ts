@@ -4,6 +4,7 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
 
@@ -53,6 +54,12 @@ meRouter.get(
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const contact = await personRepo.getUserAttributesByAccessToken(req.accessToken);
+
+            // format a phone number to a Japanese style
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
+            contact.telephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
             res.json(contact);
         } catch (error) {
             next(error);
@@ -67,23 +74,16 @@ meRouter.get(
 meRouter.put(
     '/contacts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.contacts']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-            await personRepo.updateContactByAccessToken({
+            await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
-                contact: {
-                    givenName: req.body.givenName,
-                    familyName: req.body.familyName,
-                    email: req.body.email,
-                    telephone: req.body.telephone
-                }
+                profile: req.body
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }

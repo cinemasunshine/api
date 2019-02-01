@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const createDebug = require("debug");
 const express_1 = require("express");
+const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
 const orders_1 = require("./me/orders");
@@ -52,6 +53,10 @@ meRouter.get('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin
     try {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
         const contact = yield personRepo.getUserAttributesByAccessToken(req.accessToken);
+        // format a phone number to a Japanese style
+        const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
+        const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
+        contact.telephone = phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.NATIONAL);
         res.json(contact);
     }
     catch (error) {
@@ -62,21 +67,15 @@ meRouter.get('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin
  * 会員プロフィール更新
  * @deprecated
  */
-meRouter.put('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), (__1, __2, next) => {
-    next();
-}, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+meRouter.put('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.contacts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        yield personRepo.updateContactByAccessToken({
+        yield personRepo.updateProfileByAccessToken({
             accessToken: req.accessToken,
-            contact: {
-                givenName: req.body.givenName,
-                familyName: req.body.familyName,
-                email: req.body.email,
-                telephone: req.body.telephone
-            }
+            profile: req.body
         });
-        res.status(http_status_1.NO_CONTENT).end();
+        res.status(http_status_1.NO_CONTENT)
+            .end();
     }
     catch (error) {
         next(error);
