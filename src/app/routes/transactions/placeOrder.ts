@@ -587,7 +587,7 @@ placeOrderTransactionsRouter.post(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create({
+            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 amount: parseInt(req.body.amount, 10),
@@ -623,7 +623,7 @@ placeOrderTransactionsRouter.delete(
                 endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.cancel({
+            await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agentId: req.user.sub,
                 transactionId: req.params.transactionId,
                 actionId: req.params.actionId

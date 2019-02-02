@@ -473,7 +473,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/pecor
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.create({
+        const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             amount: parseInt(req.body.amount, 10),
@@ -502,7 +502,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/award/pec
             endpoint: process.env.PECORINO_API_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield sskts.service.transaction.placeOrderInProgress.action.authorize.award.pecorino.cancel({
+        yield sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
             agentId: req.user.sub,
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
