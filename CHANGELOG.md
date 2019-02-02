@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - install @motionpicture/sskts-domain@28.0.0
 - 注文照会キーを使わずに注文を照会するように変更
 - タスク名をCinerinoに統一
+- クレジットカード決済インターフェースをCinerinoに統一
+- クレジットカード返金インターフェースをCinerinoに統一
 
 ### Deprecated
 
