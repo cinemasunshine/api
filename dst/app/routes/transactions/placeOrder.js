@@ -608,9 +608,11 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
 placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const actions = yield actionRepo.searchByTransactionId({
-            transactionType: sskts.factory.transactionType.PlaceOrder,
-            transactionId: req.params.transactionId,
+        const actions = yield actionRepo.searchByPurpose({
+            purpose: {
+                typeOf: sskts.factory.transactionType.PlaceOrder,
+                id: req.params.transactionId
+            },
             sort: req.query.sort
         });
         res.json(actions);

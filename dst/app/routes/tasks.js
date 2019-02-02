@@ -39,7 +39,6 @@ tasksRouter.post('/:name', permitScopes_1.default(['admin']), ...[
             status: cinerino.factory.taskStatus.Ready,
             runsAt: moment(req.body.runsAt).toDate(),
             remainingNumberOfTries: Number(req.body.remainingNumberOfTries),
-            lastTriedAt: null,
             numberOfTried: 0,
             executionResults: [],
             data: req.body.data

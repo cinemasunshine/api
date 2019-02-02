@@ -765,9 +765,11 @@ placeOrderTransactionsRouter.get(
     async (req, res, next) => {
         try {
             const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-            const actions = await actionRepo.searchByTransactionId({
-                transactionType: sskts.factory.transactionType.PlaceOrder,
-                transactionId: req.params.transactionId,
+            const actions = await actionRepo.searchByPurpose({
+                purpose: {
+                    typeOf: sskts.factory.transactionType.PlaceOrder,
+                    id: req.params.transactionId
+                },
                 sort: req.query.sort
             });
             res.json(actions);
