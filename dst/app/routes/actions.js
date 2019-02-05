@@ -1,9 +1,4 @@
 "use strict";
-/**
- * action router
- * アクションルーター
- * @module actionsRouter
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * アクションルーター
+ */
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -29,7 +28,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['aws.cognito.signin.
         const ticket = {
             ticketToken: req.body.ticketToken
         };
-        const action = yield new sskts.repository.Action(sskts.mongoose.connection).printTicket(req.user.sub, ticket);
+        const action = yield new sskts.repository.Action(mongoose.connection).printTicket(req.user.sub, ticket);
         res.status(http_status_1.CREATED).json(action);
     }
     catch (error) {
@@ -41,7 +40,7 @@ actionsRouter.post('/print/ticket', permitScopes_1.default(['aws.cognito.signin.
  */
 actionsRouter.get('/print/ticket', permitScopes_1.default(['aws.cognito.signin.user.admin', 'actions', 'actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actions = yield new sskts.repository.Action(sskts.mongoose.connection).searchPrintTicket({
+        const actions = yield new sskts.repository.Action(mongoose.connection).searchPrintTicket({
             agentId: req.user.sub,
             ticketToken: req.query.ticketToken
         });

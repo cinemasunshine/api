@@ -1,12 +1,10 @@
 // tslint:disable:no-implicit-dependencies
-
 /**
  * ヘルスチェックルーターテスト
- * @ignore
  */
-import * as sskts from '@motionpicture/sskts-domain';
 import * as assert from 'assert';
 import * as httpStatus from 'http-status';
+import * as mongoose from 'mongoose';
 import * as supertest from 'supertest';
 
 import * as app from '../../app/app';
@@ -17,11 +15,11 @@ const INTERVALS_CHECK_CONNECTION = 2000;
 
 describe('ヘルスチェック', () => {
     beforeEach(async () => {
-        await sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
+        await mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
     });
 
     afterEach(async () => {
-        await sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
+        await mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
     });
 
     it('mongodbとredisに接続済みであれば健康', async () => {
@@ -56,7 +54,7 @@ describe('ヘルスチェック', () => {
     });
 
     it('mongodb接続切断後アクセスすればBAD_REQUEST', async () => {
-        await sskts.mongoose.disconnect();
+        await mongoose.disconnect();
         await supertest(app)
             .get('/health')
             .set('Accept', 'application/json')

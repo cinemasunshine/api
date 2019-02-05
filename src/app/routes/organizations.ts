@@ -1,13 +1,11 @@
 /**
  * 組織ルーター
- *
- * @ignore
  */
-
 import { Router } from 'express';
 const organizationsRouter = Router();
 
 import * as sskts from '@motionpicture/sskts-domain';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -23,7 +21,7 @@ organizationsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
             const movieTheaters = await sellerRepo.search({
                 location: { branchCodes: [req.params.branchCode] }
             });
@@ -54,7 +52,7 @@ organizationsRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const repository = new sskts.repository.Seller(sskts.mongoose.connection);
+            const repository = new sskts.repository.Seller(mongoose.connection);
             const movieTheaters = await repository.search({});
 
             movieTheaters.forEach((movieTheater) => {

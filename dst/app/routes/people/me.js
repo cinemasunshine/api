@@ -17,6 +17,7 @@ const express_1 = require("express");
 const google_libphonenumber_1 = require("google-libphonenumber");
 const http_status_1 = require("http-status");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const orders_1 = require("./me/orders");
 const profile_1 = require("./me/profile");
 const authentication_1 = require("../../middlewares/authentication");
@@ -154,7 +155,7 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
             accountNumber: accountNumberRepo,
             accountService: accountService
         });
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const ownershipInfo = {
             typeOf: 'OwnershipInfo',
             // 十分にユニーク
@@ -169,7 +170,7 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
             // tslint:disable-next-line:no-magic-numbers
             ownedThrough: moment(now).add(100, 'years').toDate() // 十分に無期限
         };
-        yield ownershipInfoRepo.save(ownershipInfo);
+        yield ownershipInfoRepo.saveByIdentifier(ownershipInfo);
         res.status(http_status_1.CREATED).json(account);
     }
     catch (error) {
@@ -183,8 +184,8 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
 meRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         // 口座所有権を検索
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search4cinemasunshine({
             goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username
         });
@@ -237,8 +238,8 @@ meRouter.delete('/accounts/:accountNumber', permitScopes_1.default(['aws.cognito
     try {
         const now = new Date();
         // 口座所有権を検索
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search4cinemasunshine({
             goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username,
             ownedAt: now
@@ -265,8 +266,8 @@ meRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin
             throw new sskts.factory.errors.Forbidden('Login required');
         }
         // 口座所有権を検索
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search4cinemasunshine({
             goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username,
             ownedAt: now
@@ -297,8 +298,8 @@ meRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.de
     try {
         const now = new Date();
         // 口座所有権を検索
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search4cinemasunshine({
             goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: req.user.username,
             ownedAt: now
@@ -328,8 +329,8 @@ meRouter.get('/ownershipInfos/:goodType', permitScopes_1.default(['aws.cognito.s
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const ownershipInfos = yield repository.search({
+        const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const ownershipInfos = yield repository.search4cinemasunshine({
             goodType: req.params.goodType,
             ownedBy: req.user.username,
             ownedAt: new Date()
@@ -356,9 +357,9 @@ meRouter.put('/ownershipInfos/programMembership/register', permitScopes_1.defaul
             programMembershipId: req.body.programMembershipId,
             offerIdentifier: req.body.offerIdentifier
         })({
-            seller: new sskts.repository.Seller(sskts.mongoose.connection),
-            programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),
-            task: new sskts.repository.Task(sskts.mongoose.connection)
+            seller: new sskts.repository.Seller(mongoose.connection),
+            programMembership: new sskts.repository.ProgramMembership(mongoose.connection),
+            task: new sskts.repository.Task(mongoose.connection)
         });
         // 会員登録タスクとして受け入れられたのでACCEPTED
         res.status(http_status_1.ACCEPTED).json(task);
@@ -379,8 +380,8 @@ meRouter.put('/ownershipInfos/programMembership/:identifier/unRegister', permitS
             agent: req.agent,
             ownershipInfoIdentifier: req.params.identifier
         })({
-            ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
-            task: new sskts.repository.Task(sskts.mongoose.connection)
+            ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
+            task: new sskts.repository.Task(mongoose.connection)
         });
         // 会員登録解除タスクとして受け入れられたのでACCEPTED
         res.status(http_status_1.ACCEPTED).json(task);

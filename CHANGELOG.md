@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - 注文タスクインターフェースをCinerinoに統一
 - 注文配送タスクインターフェースをCinerinoに統一
 - 返品タスクインターフェースをCinerinoに統一
+- イベントインターフェースをCinerinoに統一
+- 予約インターフェースをCinerinoに統一
+- 注文インターフェースをCinerinoに統一
 
 ### Deprecated
 

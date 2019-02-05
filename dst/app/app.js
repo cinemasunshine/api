@@ -10,6 +10,7 @@ const createDebug = require("debug");
 const express = require("express");
 const expressValidator = require("express-validator");
 const helmet = require("helmet");
+const mongoose = require("mongoose");
 const qs = require("qs");
 const mongooseConnectionOptions_1 = require("../mongooseConnectionOptions");
 const errorHandler_1 = require("./middlewares/errorHandler");
@@ -84,7 +85,7 @@ app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }));
 app.use(expressValidator({})); // this line must be immediately after any of the bodyParser middlewares!
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
-sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
+mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default)
     .then(() => { debug('MongoDB connected.'); })
     // tslint:disable-next-line:no-console
     .catch(console.error);

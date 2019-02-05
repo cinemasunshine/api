@@ -16,6 +16,7 @@ const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
+const mongoose = require("mongoose");
 const returnOrderTransactionsRouter = express_1.Router();
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
@@ -34,9 +35,9 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const orderRepo = new sskts.repository.Order(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
         // APIユーザーが管理者の場合、顧客情報を自動取得
@@ -71,9 +72,9 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         yield sskts.service.transaction.returnOrder.confirm({
             id: req.params.transactionId,
             agent: { id: req.user.sub }
@@ -99,7 +100,7 @@ returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: sskts.factory.sortType.Descending }, typeOf: sskts.factory.transactionType.ReturnOrder });

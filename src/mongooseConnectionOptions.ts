@@ -1,4 +1,4 @@
-import { mongoose } from '@motionpicture/sskts-domain';
+import * as mongoose from 'mongoose';
 
 /**
  * mongoose接続オプション

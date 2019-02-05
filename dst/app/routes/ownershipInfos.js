@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 会員プログラムルーター
- * @ignore
  */
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -33,7 +33,7 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
             createdAtTo: new Date(toDate),
             theaterIds: theaterIds
         };
-        const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+        const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
         const count = yield repository.countProgramMembership(searchCondition);
         return res.json({ count });
     }

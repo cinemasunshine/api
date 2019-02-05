@@ -3,6 +3,7 @@
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -112,8 +113,8 @@ peopleRouter.get(
                 throw new sskts.factory.errors.NotFound('Person');
             }
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search({
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
                 goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: person.memberOf.membershipNumber,
                 ownedAt: new Date()

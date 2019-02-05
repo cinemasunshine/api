@@ -9,6 +9,7 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
+import * as mongoose from 'mongoose';
 import * as qs from 'qs';
 
 import mongooseConnectionOptions from '../mongooseConnectionOptions';
@@ -97,7 +98,7 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 
-sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
+mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
     .then(() => { debug('MongoDB connected.'); })
     // tslint:disable-next-line:no-console
     .catch(console.error);

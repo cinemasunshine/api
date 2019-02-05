@@ -1,8 +1,9 @@
 /**
  * ヘルスチェックルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
+
 const healthRouter = express.Router();
 
 import * as createDebug from 'debug';
@@ -23,7 +24,7 @@ healthRouter.get(
                     let givenUpChecking = false;
 
                     // mongodb接続状態チェック
-                    sskts.mongoose.connection.db.admin().ping((err, result) => {
+                    mongoose.connection.db.admin().ping((err, result) => {
                         debug('mongodb ping:', err, result);
                         // すでにあきらめていたら何もしない
                         if (givenUpChecking) {

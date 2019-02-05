@@ -1,12 +1,10 @@
 /**
- * action router
  * アクションルーター
- * @module actionsRouter
  */
-
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
 import { CREATED } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -28,7 +26,7 @@ actionsRouter.post(
                 ticketToken: req.body.ticketToken
             };
 
-            const action = await new sskts.repository.Action(sskts.mongoose.connection).printTicket(
+            const action = await new sskts.repository.Action(mongoose.connection).printTicket(
                 req.user.sub,
                 ticket
             );
@@ -48,7 +46,7 @@ actionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actions = await new sskts.repository.Action(sskts.mongoose.connection).searchPrintTicket({
+            const actions = await new sskts.repository.Action(mongoose.connection).searchPrintTicket({
                 agentId: req.user.sub,
                 ticketToken: req.query.ticketToken
             });

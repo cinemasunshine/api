@@ -20,6 +20,7 @@ const check_1 = require("express-validator/check");
 const http_status_1 = require("http-status");
 const ioredis = require("ioredis");
 const moment = require("moment");
+const mongoose = require("mongoose");
 const authentication_1 = require("../../middlewares/authentication");
 const permitScopes_1 = require("../../middlewares/permitScopes");
 const validator_1 = require("../../middlewares/validator");
@@ -90,8 +91,8 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
             clientUser: req.user,
             passportToken: req.body.passportToken
         })({
-            seller: new sskts.repository.Seller(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            seller: new sskts.repository.Seller(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
@@ -123,7 +124,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
                 telephone: req.body.telephone
             }
         })({
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED).json(contact);
     }
@@ -144,9 +145,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             eventIdentifier: req.body.eventIdentifier,
             offers: req.body.offers
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            event: new sskts.repository.Event(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
+            event: new sskts.repository.Event(mongoose.connection)
         });
         res.status(http_status_1.CREATED).json(action);
     }
@@ -164,8 +165,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT).end();
     }
@@ -187,9 +188,9 @@ placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReserv
             eventIdentifier: req.body.eventIdentifier,
             offers: req.body.offers
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            event: new sskts.repository.Event(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
+            event: new sskts.repository.Event(mongoose.connection)
         });
         res.json(action);
     }
@@ -263,9 +264,9 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/offer/pro
 //                 method: req.body.method,
 //                 creditCard: creditCard
 //             })({
-//                 action: new sskts.repository.Action(sskts.mongoose.connection),
-//                 transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-//                 organization: new sskts.repository.Seller(sskts.mongoose.connection)
+//                 action: new sskts.repository.Action(mongoose.connection),
+//                 transaction: new sskts.repository.Transaction(mongoose.connection),
+//                 organization: new sskts.repository.Seller(mongoose.connection)
 //             });
 //             res.status(ACCEPTED).json({
 //                 id: action.id
@@ -302,9 +303,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/creditCard'
                 creditCard: creditCard
             }
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            seller: new sskts.repository.Seller(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
+            seller: new sskts.repository.Seller(mongoose.connection)
         });
         res.status(http_status_1.CREATED).json({
             id: action.id
@@ -324,8 +325,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/creditCar
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT).end();
     }
@@ -365,8 +366,8 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/mvtk', perm
             transactionId: req.params.transactionId,
             authorizeObject: authorizeObject
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED).json({
             id: action.id
@@ -386,8 +387,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/mvtk/:act
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.NO_CONTENT).end();
     }
@@ -422,10 +423,10 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
                 notes: req.body.notes
             }
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            seller: new sskts.repository.Seller(sskts.mongoose.connection),
-            ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            action: new sskts.repository.Action(mongoose.connection),
+            seller: new sskts.repository.Seller(mongoose.connection),
+            ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
             transferTransactionService: transferService
         });
         res.status(http_status_1.CREATED).json(action);
@@ -449,8 +450,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/paymentMe
             agent: { id: req.user.sub },
             transaction: { id: req.params.transactionId }
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
             transferTransactionService: transferService
         });
         res.status(http_status_1.NO_CONTENT).end();
@@ -480,9 +481,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/pecor
             toAccountNumber: req.body.toAccountNumber,
             notes: req.body.notes
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
-            ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
+            ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
             depositTransactionService: depositService
         });
         res.status(http_status_1.CREATED).json(action);
@@ -507,8 +508,8 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/award/pec
             transactionId: req.params.transactionId,
             actionId: req.params.actionId
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
             depositTransactionService: depositService
         });
         res.status(http_status_1.NO_CONTENT).end();
@@ -526,10 +527,10 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
             sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
             orderDate: orderDate
         })({
-            action: new sskts.repository.Action(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection),
+            action: new sskts.repository.Action(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection),
             orderNumber: new sskts.repository.OrderNumber(redis.getClient()),
-            seller: new sskts.repository.Seller(sskts.mongoose.connection)
+            seller: new sskts.repository.Seller(mongoose.connection)
         });
         debug('transaction confirmed', order);
         res.status(http_status_1.CREATED).json(order);
@@ -543,7 +544,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
  */
 placeOrderTransactionsRouter.post('/:transactionId/cancel', permitScopes_1.default(['admin', 'aws.cognito.signin.user.admin', 'transactions']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         yield transactionRepo.cancel({
             typeOf: sskts.factory.transactionType.PlaceOrder,
             id: req.params.transactionId
@@ -570,8 +571,8 @@ placeOrderTransactionsRouter.post('/:transactionId/tasks/sendEmailNotification',
             about: req.body.about,
             text: req.body.text
         })({
-            task: new sskts.repository.Task(sskts.mongoose.connection),
-            transaction: new sskts.repository.Transaction(sskts.mongoose.connection)
+            task: new sskts.repository.Task(mongoose.connection),
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.status(http_status_1.CREATED).json(task);
     }
@@ -589,7 +590,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
@@ -607,7 +608,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
  */
 placeOrderTransactionsRouter.get('/:transactionId/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByPurpose({
             purpose: {
                 typeOf: sskts.factory.transactionType.PlaceOrder,
