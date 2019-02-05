@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
 const google_libphonenumber_1 = require("google-libphonenumber");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -40,9 +41,8 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
             confirmationNumber: req.body.confirmationNumber,
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        const repository = new sskts.repository.Order(sskts.mongoose.connection);
-        const order = yield repository.findByOrderInquiryKey(key);
-        // const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
+        const repository = new sskts.repository.Order(mongoose.connection);
+        const order = yield repository.findByLocationBranchCodeAndReservationNumber(key);
         res.json(order);
     }
     catch (error) {
@@ -54,7 +54,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
  */
 ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+        const actionRepo = new sskts.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByOrderNumber({
             orderNumber: req.params.orderNumber,
             sort: req.query.sort
@@ -102,7 +102,7 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+        const orderRepo = new sskts.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: sskts.factory.sortType.Descending } });

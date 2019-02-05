@@ -1,9 +1,9 @@
 /**
  * 会員プログラムルーター
- * @ignore
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -19,7 +19,7 @@ programMembershipsRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const repository = new sskts.repository.ProgramMembership(sskts.mongoose.connection);
+            const repository = new sskts.repository.ProgramMembership(mongoose.connection);
             const programMemberships = await repository.search({});
             res.json(programMemberships);
         } catch (error) {

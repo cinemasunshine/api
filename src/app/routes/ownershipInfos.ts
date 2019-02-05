@@ -1,9 +1,9 @@
 /**
  * 会員プログラムルーター
- * @ignore
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -34,7 +34,7 @@ ownershipInfosRouter.get(
                 theaterIds: theaterIds
             };
 
-            const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+            const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
             const count = await repository.countProgramMembership(searchCondition);
 
             return res.json({ count });

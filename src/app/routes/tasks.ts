@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { body, query } from 'express-validator/check';
 import { CREATED } from 'http-status';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -31,13 +32,12 @@ tasksRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const attributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName> = {
                 name: req.params.name,
                 status: cinerino.factory.taskStatus.Ready,
                 runsAt: moment(req.body.runsAt).toDate(),
                 remainingNumberOfTries: Number(req.body.remainingNumberOfTries),
-                lastTriedAt: null,
                 numberOfTried: 0,
                 executionResults: [],
                 data: req.body.data
@@ -59,7 +59,7 @@ tasksRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const task = await taskRepo.findById({
                 name: req.params.name,
                 id: req.params.id
@@ -86,7 +86,7 @@ tasksRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const taskRepo = new cinerino.repository.Task(cinerino.mongoose.connection);
+            const taskRepo = new cinerino.repository.Task(mongoose.connection);
             const searchConditions: cinerino.factory.task.ISearchConditions<cinerino.factory.taskName> = {
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,

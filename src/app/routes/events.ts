@@ -5,6 +5,7 @@ import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
+import * as mongoose from 'mongoose';
 
 import * as redis from '../../redis';
 import authentication from '../middlewares/authentication';
@@ -24,7 +25,7 @@ eventsRouter.get(
     async (req, res, next) => {
         try {
             await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-                event: new sskts.repository.Event(sskts.mongoose.connection),
+                event: new sskts.repository.Event(mongoose.connection),
                 itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
             }).then((event) => {
                 res.json(event);
@@ -49,7 +50,7 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+            const eventRepo = new sskts.repository.Event(mongoose.connection);
             const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
             const searchConditions: sskts.factory.event.screeningEvent.ISearchConditions = {
@@ -80,7 +81,7 @@ eventsRouter.get(
     async (req, res, next) => {
         try {
             await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-                event: new sskts.repository.Event(sskts.mongoose.connection),
+                event: new sskts.repository.Event(mongoose.connection),
                 itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
             }).then((event) => {
                 res.json(event);
@@ -102,7 +103,7 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+            const eventRepo = new sskts.repository.Event(mongoose.connection);
             const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
             const searchConditions: sskts.factory.event.screeningEvent.ISearchConditions = {

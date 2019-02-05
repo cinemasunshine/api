@@ -4,8 +4,10 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { ACCEPTED, BAD_REQUEST, CREATED, FORBIDDEN, NO_CONTENT, NOT_FOUND, TOO_MANY_REQUESTS, UNAUTHORIZED } from 'http-status';
 import * as moment from 'moment';
+import * as mongoose from 'mongoose';
 
 import ordersRouter from './me/orders';
 import profileRouter from './me/profile';
@@ -53,6 +55,12 @@ meRouter.get(
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const contact = await personRepo.getUserAttributesByAccessToken(req.accessToken);
+
+            // format a phone number to a Japanese style
+            const phoneUtil = PhoneNumberUtil.getInstance();
+            const phoneNumber = phoneUtil.parse(contact.telephone, 'JP');
+            contact.telephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.NATIONAL);
+
             res.json(contact);
         } catch (error) {
             next(error);
@@ -67,23 +75,35 @@ meRouter.get(
 meRouter.put(
     '/contacts',
     permitScopes(['aws.cognito.signin.user.admin', 'people.contacts']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     async (req, res, next) => {
         try {
+            // 日本語フォーマットで電話番号が渡される想定なので変換
+            let formatedPhoneNumber: string;
+            try {
+                const phoneUtil = PhoneNumberUtil.getInstance();
+                const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
+                if (!phoneUtil.isValidNumber(phoneNumber)) {
+                    throw new Error('Invalid phone number format.');
+                }
+
+                formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+            } catch (error) {
+                next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
+
+                return;
+            }
+
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-            await personRepo.updateContactByAccessToken({
+            await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
-                contact: {
-                    givenName: req.body.givenName,
-                    familyName: req.body.familyName,
-                    email: req.body.email,
-                    telephone: req.body.telephone
+                profile: {
+                    ...req.body,
+                    telephone: formatedPhoneNumber
                 }
             });
-            res.status(NO_CONTENT).end();
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
@@ -169,7 +189,7 @@ meRouter.post(
                 accountNumber: accountNumberRepo,
                 accountService: accountService
             });
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
             const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.pecorino.account.TypeOf> = {
                 typeOf: 'OwnershipInfo',
                 // 十分にユニーク
@@ -184,7 +204,7 @@ meRouter.post(
                 // tslint:disable-next-line:no-magic-numbers
                 ownedThrough: moment(now).add(100, 'years').toDate() // 十分に無期限
             };
-            await ownershipInfoRepo.save(ownershipInfo);
+            await ownershipInfoRepo.saveByIdentifier(ownershipInfo);
             res.status(CREATED).json(account);
         } catch (error) {
             next(error);
@@ -203,8 +223,8 @@ meRouter.put(
     async (req, res, next) => {
         try {
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search({
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
                 goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username
             });
@@ -264,8 +284,8 @@ meRouter.delete(
         try {
             const now = new Date();
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search({
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
                 goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username,
                 ownedAt: now
@@ -302,8 +322,8 @@ meRouter.get(
             }
 
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search({
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
                 goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username,
                 ownedAt: now
@@ -340,8 +360,8 @@ meRouter.get(
         try {
             const now = new Date();
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search({
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
                 goodType: sskts.factory.pecorino.account.TypeOf.Account,
                 ownedBy: req.user.username,
                 ownedAt: now
@@ -378,8 +398,8 @@ meRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const repository = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-            const ownershipInfos = await repository.search({
+            const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfos = await repository.search4cinemasunshine({
                 goodType: req.params.goodType,
                 ownedBy: req.user.username,
                 ownedAt: new Date()
@@ -412,9 +432,9 @@ meRouter.put(
                 programMembershipId: req.body.programMembershipId,
                 offerIdentifier: req.body.offerIdentifier
             })({
-                organization: new sskts.repository.Organization(sskts.mongoose.connection),
-                programMembership: new sskts.repository.ProgramMembership(sskts.mongoose.connection),
-                task: new sskts.repository.Task(sskts.mongoose.connection)
+                seller: new sskts.repository.Seller(mongoose.connection),
+                programMembership: new sskts.repository.ProgramMembership(mongoose.connection),
+                task: new sskts.repository.Task(mongoose.connection)
             });
             // 会員登録タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED).json(task);
@@ -441,8 +461,8 @@ meRouter.put(
                 agent: req.agent,
                 ownershipInfoIdentifier: req.params.identifier
             })({
-                ownershipInfo: new sskts.repository.OwnershipInfo(sskts.mongoose.connection),
-                task: new sskts.repository.Task(sskts.mongoose.connection)
+                ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
+                task: new sskts.repository.Task(mongoose.connection)
             });
             // 会員登録解除タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED).json(task);

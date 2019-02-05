@@ -6,6 +6,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
 import { NO_CONTENT } from 'http-status';
+import * as mongoose from 'mongoose';
 
 const returnOrderTransactionsRouter = Router();
 
@@ -33,9 +34,9 @@ returnOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-            const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
-            const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+            const actionRepo = new sskts.repository.Action(mongoose.connection);
+            const orderRepo = new sskts.repository.Order(mongoose.connection);
+            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
 
             let order: sskts.factory.order.IOrder | undefined;
             let returnableOrder: sskts.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
@@ -82,16 +83,16 @@ returnOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
-            const organizationRepo = new sskts.repository.Organization(sskts.mongoose.connection);
-            const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+            const actionRepo = new sskts.repository.Action(mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
             await sskts.service.transaction.returnOrder.confirm({
                 id: req.params.transactionId,
                 agent: { id: req.user.sub }
             })({
                 action: actionRepo,
                 transaction: transactionRepo,
-                organization: organizationRepo
+                seller: sellerRepo
             });
 
             res.status(NO_CONTENT)
@@ -117,7 +118,7 @@ returnOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new sskts.repository.Transaction(sskts.mongoose.connection);
+            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
             const searchConditions: sskts.factory.transaction.ISearchConditions<sskts.factory.transactionType.ReturnOrder> = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

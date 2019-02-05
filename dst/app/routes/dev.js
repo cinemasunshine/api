@@ -1,12 +1,10 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * devルーター
- *
- * @ignore
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-const sskts = require("@motionpicture/sskts-domain");
 const express = require("express");
+const mongoose = require("mongoose");
 const devRouter = express.Router();
 const http_status_1 = require("http-status");
 const mongooseConnectionOptions_1 = require("../../mongooseConnectionOptions");
@@ -22,7 +20,7 @@ devRouter.get('/environmentVariables', (__, res) => {
     });
 });
 devRouter.get('/mongoose/connect', (__, res) => {
-    sskts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default, () => {
+    mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default, () => {
         res.status(http_status_1.NO_CONTENT).end();
     });
 });

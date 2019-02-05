@@ -11,8 +11,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ヘルスチェックルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
 const express = require("express");
+const mongoose = require("mongoose");
 const healthRouter = express.Router();
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
@@ -26,7 +26,7 @@ healthRouter.get('', (_, res, next) => __awaiter(this, void 0, void 0, function*
             new Promise((resolve, reject) => {
                 let givenUpChecking = false;
                 // mongodb接続状態チェック
-                sskts.mongoose.connection.db.admin().ping((err, result) => {
+                mongoose.connection.db.admin().ping((err, result) => {
                     debug('mongodb ping:', err, result);
                     // すでにあきらめていたら何もしない
                     if (givenUpChecking) {

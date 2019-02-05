@@ -1,11 +1,9 @@
 /**
  * devルーター
- *
- * @ignore
  */
-
-import * as sskts from '@motionpicture/sskts-domain';
 import * as express from 'express';
+import * as mongoose from 'mongoose';
+
 const devRouter = express.Router();
 
 import { NO_CONTENT } from 'http-status';
@@ -34,7 +32,7 @@ devRouter.get(
 devRouter.get(
     '/mongoose/connect',
     (__, res) => {
-        sskts.mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions, () => {
+        mongoose.connect(<string>process.env.MONGOLAB_URI, <any>mongooseConnectionOptions, () => {
             res.status(NO_CONTENT).end();
         });
     });

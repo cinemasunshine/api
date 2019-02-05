@@ -6,6 +6,7 @@ import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body } from 'express-validator/check';
 import { CREATED, NO_CONTENT } from 'http-status';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -83,9 +84,9 @@ sellersRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: sskts.factory.organization.IAttributes<typeof req.body.typeOf> = req.body;
+            const attributes: sskts.factory.seller.IAttributes<typeof req.body.typeOf> = req.body;
 
-            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
             const seller = await sellerRepo.save({ attributes: attributes });
 
             res.status(CREATED)
@@ -105,14 +106,14 @@ sellersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const searchCoinditions: sskts.factory.organization.ISearchConditions<any> = {
+            const searchCoinditions: sskts.factory.seller.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
             };
 
-            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
             const sellers = await sellerRepo.search(searchCoinditions);
             const totalCount = await sellerRepo.count(searchCoinditions);
 
@@ -133,7 +134,7 @@ sellersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
             const seller = await sellerRepo.findById({
                 id: req.params.id
             });
@@ -213,9 +214,9 @@ sellersRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const attributes: sskts.factory.organization.IAttributes<typeof req.body.typeOf> = req.body;
+            const attributes: sskts.factory.seller.IAttributes<typeof req.body.typeOf> = req.body;
 
-            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
             await sellerRepo.save({ id: req.params.id, attributes: attributes });
 
             res.status(NO_CONTENT)
@@ -235,7 +236,7 @@ sellersRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            const sellerRepo = new sskts.repository.Seller(sskts.mongoose.connection);
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
             await sellerRepo.deleteById({
                 id: req.params.id
             });

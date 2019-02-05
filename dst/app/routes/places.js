@@ -1,9 +1,4 @@
 "use strict";
-/**
- * 場所ルーター
- *
- * @ignore
- */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -13,16 +8,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 場所ルーター
+ */
 const express_1 = require("express");
 const placesRouter = express_1.Router();
 const sskts = require("@motionpicture/sskts-domain");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 placesRouter.use(authentication_1.default);
 placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cognito.signin.user.admin', 'places', 'places.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new sskts.repository.Place(sskts.mongoose.connection);
+        const repository = new sskts.repository.Place(mongoose.connection);
         yield repository.findMovieTheaterByBranchCode(req.params.branchCode).then((theater) => {
             res.json(theater);
         });
@@ -33,7 +32,7 @@ placesRouter.get('/movieTheater/:branchCode', permitScopes_1.default(['aws.cogni
 }));
 placesRouter.get('/movieTheater', permitScopes_1.default(['aws.cognito.signin.user.admin', 'places', 'places.read-only']), validator_1.default, (__, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const repository = new sskts.repository.Place(sskts.mongoose.connection);
+        const repository = new sskts.repository.Place(mongoose.connection);
         yield repository.searchMovieTheaters({}).then((places) => {
             res.json(places);
         });

@@ -15,6 +15,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
+const mongoose = require("mongoose");
 const redis = require("../../redis");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -27,7 +28,7 @@ eventsRouter.use(authentication_1.default);
 eventsRouter.get('/individualScreeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-            event: new sskts.repository.Event(sskts.mongoose.connection),
+            event: new sskts.repository.Event(mongoose.connection),
             itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
         }).then((event) => {
             res.json(event);
@@ -47,7 +48,7 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const eventRepo = new sskts.repository.Event(mongoose.connection);
         const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
@@ -67,7 +68,7 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
 eventsRouter.get('/screeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-            event: new sskts.repository.Event(sskts.mongoose.connection),
+            event: new sskts.repository.Event(mongoose.connection),
             itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
         }).then((event) => {
             res.json(event);
@@ -84,7 +85,7 @@ eventsRouter.get('/screeningEvent', permitScopes_1.default(['aws.cognito.signin.
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const eventRepo = new sskts.repository.Event(sskts.mongoose.connection);
+        const eventRepo = new sskts.repository.Event(mongoose.connection);
         const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers

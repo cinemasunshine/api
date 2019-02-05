@@ -18,6 +18,23 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.1.0 - 2019-02-05
+
+### Changed
+
+- 組織のgmoInfoをpaymentAcceptedから変換するように対応
+- install @motionpicture/sskts-domain@28.0.0
+- 注文照会キーを使わずに注文を照会するように変更
+- タスク名をCinerinoに統一
+- クレジットカード決済インターフェースをCinerinoに統一
+- クレジットカード返金インターフェースをCinerinoに統一
+- 注文タスクインターフェースをCinerinoに統一
+- 注文配送タスクインターフェースをCinerinoに統一
+- 返品タスクインターフェースをCinerinoに統一
+- イベントインターフェースをCinerinoに統一
+- 予約インターフェースをCinerinoに統一
+- 注文インターフェースをCinerinoに統一
+
 ## v12.0.1 - 2019-01-29
 
 ### Changed

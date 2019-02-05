@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
+const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
@@ -105,8 +106,8 @@ peopleRouter.get('/:id/accounts', permitScopes_1.default(['admin']), validator_1
             throw new sskts.factory.errors.NotFound('Person');
         }
         // 口座所有権を検索
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(sskts.mongoose.connection);
-        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const accountOwnershipInfos = yield ownershipInfoRepo.search4cinemasunshine({
             goodType: sskts.factory.pecorino.account.TypeOf.Account,
             ownedBy: person.memberOf.membershipNumber,
             ownedAt: new Date()

@@ -4,6 +4,7 @@
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
+import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
@@ -41,9 +42,8 @@ ordersRouter.post(
                 confirmationNumber: req.body.confirmationNumber,
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
-            const repository = new sskts.repository.Order(sskts.mongoose.connection);
-            const order = await repository.findByOrderInquiryKey(key);
-            // const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
+            const repository = new sskts.repository.Order(mongoose.connection);
+            const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
             res.json(order);
         } catch (error) {
             next(error);
@@ -60,7 +60,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(sskts.mongoose.connection);
+            const actionRepo = new sskts.repository.Action(mongoose.connection);
             const actions = await actionRepo.searchByOrderNumber({
                 orderNumber: req.params.orderNumber,
                 sort: req.query.sort
@@ -114,7 +114,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new sskts.repository.Order(sskts.mongoose.connection);
+            const orderRepo = new sskts.repository.Order(mongoose.connection);
             const searchConditions: sskts.factory.order.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
