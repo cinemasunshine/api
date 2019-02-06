@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.1.1 - 2019-02-06
+
+### Fixed
+
+- イベントのオファー属性の未定義を修正
+
 ## v12.1.0 - 2019-02-05
 
 ### Changed
