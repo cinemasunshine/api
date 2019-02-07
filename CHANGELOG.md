@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.2.0 - 2019-02-07
+
+### Added
+
+- ユーザー所有権検索エンドポイント追加
+
 ## v12.1.1 - 2019-02-06
 
 ### Fixed
