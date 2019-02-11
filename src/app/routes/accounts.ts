@@ -1,5 +1,5 @@
 /**
- * Pecorino口座ルーター
+ * ポイント口座ルーター
  */
 import * as sskts from '@motionpicture/sskts-domain';
 // import * as createDebug from 'debug';

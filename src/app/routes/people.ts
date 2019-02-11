@@ -86,15 +86,6 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-            const person = await personRepo.findById({
-                userPooId: <string>process.env.COGNITO_USER_POOL_ID,
-                userId: req.params.id
-            });
-            if (person.memberOf === undefined) {
-                throw new sskts.factory.errors.NotFound('Person');
-            }
-
             const query = <sskts.factory.ownershipInfo.ISearchConditions<any>>req.query;
             const typeOfGood = query.typeOfGood;
             let ownershipInfos: sskts.factory.ownershipInfo.IOwnershipInfo<any>[];
@@ -123,7 +114,7 @@ peopleRouter.get(
                     });
 
                     const accounts = await accountService.search({
-                        accountType: sskts.factory.accountType.Point,
+                        accountType: searchConditions.typeOfGood.accountType,
                         accountNumbers: ownershipInfos.map((o) => o.typeOfGood.accountNumber),
                         statuses: [],
                         limit: 100
@@ -138,18 +129,20 @@ peopleRouter.get(
                     });
 
                     break;
-                // case sskts.factory.chevre.reservationType.EventReservation:
-                //     const reservationService = new cinerino.chevre.service.Reservation({
-                //         endpoint: <string>process.env.CHEVRE_ENDPOINT,
-                //         auth: chevreAuthClient
-                //     });
-                //     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(
-                //         { ...searchConditions, typeOfGood: typeOfGood }
-                //     )({
-                //         ownershipInfo: ownershipInfoRepo,
-                //         reservationService: reservationService
-                //     });
-                //     break;
+
+                case sskts.factory.chevre.reservationType.EventReservation:
+                    // typeOfGoodに予約内容がすべて含まれているので、外部サービスに問い合わせ不要
+                    // const reservationService = new cinerino.chevre.service.Reservation({
+                    //     endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    //     auth: chevreAuthClient
+                    // });
+                    // ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(
+                    //     { ...searchConditions, typeOfGood: typeOfGood }
+                    // )({
+                    //     ownershipInfo: ownershipInfoRepo,
+                    //     reservationService: reservationService
+                    // });
+                    break;
 
                 default:
                     throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
@@ -211,8 +204,10 @@ peopleRouter.get(
         }
     }
 );
+
 /**
  * ポイント口座検索
+ * @deprecated
  */
 peopleRouter.get(
     '/:id/accounts',
@@ -221,14 +216,7 @@ peopleRouter.get(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-            const person = await personRepo.findById({
-                userPooId: <string>process.env.COGNITO_USER_POOL_ID,
-                userId: req.params.id
-            });
-            if (person.memberOf === undefined) {
-                throw new sskts.factory.errors.NotFound('Person');
-            }
+
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
             const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
@@ -261,4 +249,5 @@ peopleRouter.get(
         }
     }
 );
+
 export default peopleRouter;

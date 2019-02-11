@@ -165,7 +165,7 @@ meRouter.delete(
 );
 
 /**
- * Pecorino口座開設
+ * ポイント口座開設
  */
 meRouter.post(
     '/accounts',
@@ -216,7 +216,7 @@ meRouter.post(
 );
 
 /**
- * Pecorino口座解約
+ * ポイント口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
 meRouter.put(
@@ -282,7 +282,7 @@ meRouter.put(
 );
 
 /**
- * Pecorino口座削除
+ * ポイント口座削除
  */
 meRouter.delete(
     '/accounts/:accountNumber',
@@ -322,7 +322,7 @@ meRouter.delete(
 );
 
 /**
- * Pecorino口座検索
+ * ポイント口座検索
  */
 meRouter.get(
     '/accounts',
@@ -331,9 +331,6 @@ meRouter.get(
     async (req, res, next) => {
         try {
             const now = new Date();
-            if (req.user.username === undefined) {
-                throw new sskts.factory.errors.Forbidden('Login required');
-            }
 
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
@@ -370,7 +367,7 @@ meRouter.get(
 );
 
 /**
- * Pecorino取引履歴検索
+ * ポイント口座取引履歴検索
  */
 meRouter.get(
     '/accounts/:accountNumber/actions/moneyTransfer',

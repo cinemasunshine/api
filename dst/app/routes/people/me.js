@@ -136,7 +136,7 @@ meRouter.delete('/creditCards/:cardSeq', permitScopes_1.default(['aws.cognito.si
     }
 }));
 /**
- * Pecorino口座開設
+ * ポイント口座開設
  */
 meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), (req, _, next) => {
     req.checkBody('name', 'invalid name').notEmpty().withMessage('name is required');
@@ -180,7 +180,7 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
     }
 }));
 /**
- * Pecorino口座解約
+ * ポイント口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
 meRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
@@ -239,7 +239,7 @@ meRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cogn
     }
 }));
 /**
- * Pecorino口座削除
+ * ポイント口座削除
  */
 meRouter.delete('/accounts/:accountNumber', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -270,14 +270,11 @@ meRouter.delete('/accounts/:accountNumber', permitScopes_1.default(['aws.cognito
     }
 }));
 /**
- * Pecorino口座検索
+ * ポイント口座検索
  */
 meRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const now = new Date();
-        if (req.user.username === undefined) {
-            throw new sskts.factory.errors.Forbidden('Login required');
-        }
         // 口座所有権を検索
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
         const accountOwnershipInfos = yield ownershipInfoRepo.search({
@@ -311,7 +308,7 @@ meRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin
     }
 }));
 /**
- * Pecorino取引履歴検索
+ * ポイント口座取引履歴検索
  */
 meRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.accounts.actions.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
