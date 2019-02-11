@@ -3,6 +3,7 @@
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
+import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -94,30 +95,28 @@ peopleRouter.get(
                 throw new sskts.factory.errors.NotFound('Person');
             }
 
-            const query = req.query;
-            const goodType = query.typeOfGood.typeOf;
-            let ownershipInfos: sskts.factory.ownershipInfo.IOwnershipInfo<typeof goodType>[];
-            const searchConditions: sskts.factory.ownershipInfo.ISearchConditions<typeof goodType> = {
+            const query = <sskts.factory.ownershipInfo.ISearchConditions<any>>req.query;
+            const typeOfGood = query.typeOfGood;
+            let ownershipInfos: sskts.factory.ownershipInfo.IOwnershipInfo<any>[];
+            const searchConditions: sskts.factory.ownershipInfo.ISearchConditions<any> = {
                 // tslint:disable-next-line:no-magic-numbers
-                // limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
-                // page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
-                // sort: (query.sort !== undefined) ? query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
-                ownedBy: person.memberOf.membershipNumber,
-                ownedAt: new Date(),
-                // ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
-                //     .toDate() : undefined,
-                // ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
-                //     .toDate() : undefined,
-                goodType: goodType
+                limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
+                page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
+                sort: (query.sort !== undefined) ? query.sort : { ownedFrom: sskts.factory.sortType.Descending },
+                ownedBy: { id: req.params.id },
+                ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
+                    .toDate() : undefined,
+                ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
+                    .toDate() : undefined,
+                typeOfGood: typeOfGood
             };
 
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            // const totalCount = await ownershipInfoRepo.count(searchConditions);
-            ownershipInfos = await ownershipInfoRepo.search4cinemasunshine<typeof goodType>(searchConditions);
-            const totalCount = ownershipInfos.length;
+            const totalCount = await ownershipInfoRepo.count(searchConditions);
+            ownershipInfos = await ownershipInfoRepo.search(searchConditions);
 
-            switch (goodType) {
-                case sskts.factory.pecorino.account.TypeOf.Account:
+            switch (searchConditions.typeOfGood.typeOf) {
+                case sskts.factory.ownershipInfo.AccountGoodType.Account:
                     const accountService = new sskts.pecorinoapi.service.Account({
                         endpoint: <string>process.env.PECORINO_API_ENDPOINT,
                         auth: pecorinoAuthClient
@@ -125,12 +124,12 @@ peopleRouter.get(
 
                     const accounts = await accountService.search({
                         accountType: sskts.factory.accountType.Point,
-                        accountNumbers: ownershipInfos.map((o) => (<any>o.typeOfGood).accountNumber),
+                        accountNumbers: ownershipInfos.map((o) => o.typeOfGood.accountNumber),
                         statuses: [],
                         limit: 100
                     });
                     ownershipInfos = ownershipInfos.map((o) => {
-                        const account = accounts.find((a) => a.accountNumber === (<any>o.typeOfGood).accountNumber);
+                        const account = accounts.find((a) => a.accountNumber === o.typeOfGood.accountNumber);
                         if (account === undefined) {
                             throw new sskts.factory.errors.NotFound('Account');
                         }
@@ -221,6 +220,7 @@ peopleRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const now = new Date();
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const person = await personRepo.findById({
                 userPooId: <string>process.env.COGNITO_USER_POOL_ID,
@@ -231,10 +231,16 @@ peopleRouter.get(
             }
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
-                goodType: sskts.factory.pecorino.account.TypeOf.Account,
-                ownedBy: person.memberOf.membershipNumber,
-                ownedAt: new Date()
+            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+                typeOfGood: {
+                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: sskts.factory.accountType.Point
+                },
+                ownedBy: {
+                    id: req.params.id
+                },
+                ownedFrom: now,
+                ownedThrough: now
             });
             let accounts: sskts.factory.pecorino.account.IAccount<sskts.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
