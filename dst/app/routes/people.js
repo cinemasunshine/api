@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const sskts = require("@motionpicture/sskts-domain");
 const express_1 = require("express");
+const moment = require("moment");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
@@ -79,42 +80,32 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const person = yield personRepo.findById({
-            userPooId: process.env.COGNITO_USER_POOL_ID,
-            userId: req.params.id
-        });
-        if (person.memberOf === undefined) {
-            throw new sskts.factory.errors.NotFound('Person');
-        }
         const query = req.query;
-        const goodType = query.typeOfGood.typeOf;
+        const typeOfGood = query.typeOfGood;
         let ownershipInfos;
         const searchConditions = {
             // tslint:disable-next-line:no-magic-numbers
-            // limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
-            // page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
-            // sort: (query.sort !== undefined) ? query.sort : { ownedFrom: cinerino.factory.sortType.Descending },
-            ownedBy: person.memberOf.membershipNumber,
-            ownedAt: new Date(),
-            // ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
-            //     .toDate() : undefined,
-            // ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
-            //     .toDate() : undefined,
-            goodType: goodType
+            limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
+            page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
+            sort: (query.sort !== undefined) ? query.sort : { ownedFrom: sskts.factory.sortType.Descending },
+            ownedBy: { id: req.params.id },
+            ownedFrom: (query.ownedFrom !== undefined) ? moment(query.ownedFrom)
+                .toDate() : undefined,
+            ownedThrough: (query.ownedThrough !== undefined) ? moment(query.ownedThrough)
+                .toDate() : undefined,
+            typeOfGood: typeOfGood
         };
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-        // const totalCount = await ownershipInfoRepo.count(searchConditions);
-        ownershipInfos = yield ownershipInfoRepo.search4cinemasunshine(searchConditions);
-        const totalCount = ownershipInfos.length;
-        switch (goodType) {
-            case sskts.factory.pecorino.account.TypeOf.Account:
+        const totalCount = yield ownershipInfoRepo.count(searchConditions);
+        ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
+        switch (searchConditions.typeOfGood.typeOf) {
+            case sskts.factory.ownershipInfo.AccountGoodType.Account:
                 const accountService = new sskts.pecorinoapi.service.Account({
                     endpoint: process.env.PECORINO_API_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
                 const accounts = yield accountService.search({
-                    accountType: sskts.factory.accountType.Point,
+                    accountType: searchConditions.typeOfGood.accountType,
                     accountNumbers: ownershipInfos.map((o) => o.typeOfGood.accountNumber),
                     statuses: [],
                     limit: 100
@@ -127,18 +118,19 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
                     return Object.assign({}, o, { typeOfGood: account });
                 });
                 break;
-            // case sskts.factory.chevre.reservationType.EventReservation:
-            //     const reservationService = new cinerino.chevre.service.Reservation({
-            //         endpoint: <string>process.env.CHEVRE_ENDPOINT,
-            //         auth: chevreAuthClient
-            //     });
-            //     ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(
-            //         { ...searchConditions, typeOfGood: typeOfGood }
-            //     )({
-            //         ownershipInfo: ownershipInfoRepo,
-            //         reservationService: reservationService
-            //     });
-            //     break;
+            case sskts.factory.chevre.reservationType.EventReservation:
+                // typeOfGoodに予約内容がすべて含まれているので、外部サービスに問い合わせ不要
+                // const reservationService = new cinerino.chevre.service.Reservation({
+                //     endpoint: <string>process.env.CHEVRE_ENDPOINT,
+                //     auth: chevreAuthClient
+                // });
+                // ownershipInfos = await cinerino.service.reservation.searchScreeningEventReservations(
+                //     { ...searchConditions, typeOfGood: typeOfGood }
+                // )({
+                //     ownershipInfo: ownershipInfoRepo,
+                //     reservationService: reservationService
+                // });
+                break;
             default:
                 throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
@@ -192,23 +184,23 @@ peopleRouter.get('/:id/creditCards', permitScopes_1.default(['admin']), (req, re
 }));
 /**
  * ポイント口座検索
+ * @deprecated
  */
 peopleRouter.get('/:id/accounts', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
-        const person = yield personRepo.findById({
-            userPooId: process.env.COGNITO_USER_POOL_ID,
-            userId: req.params.id
-        });
-        if (person.memberOf === undefined) {
-            throw new sskts.factory.errors.NotFound('Person');
-        }
+        const now = new Date();
         // 口座所有権を検索
         const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-        const accountOwnershipInfos = yield ownershipInfoRepo.search4cinemasunshine({
-            goodType: sskts.factory.pecorino.account.TypeOf.Account,
-            ownedBy: person.memberOf.membershipNumber,
-            ownedAt: new Date()
+        const accountOwnershipInfos = yield ownershipInfoRepo.search({
+            typeOfGood: {
+                typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                accountType: sskts.factory.accountType.Point
+            },
+            ownedBy: {
+                id: req.params.id
+            },
+            ownedFrom: now,
+            ownedThrough: now
         });
         let accounts = [];
         if (accountOwnershipInfos.length > 0) {

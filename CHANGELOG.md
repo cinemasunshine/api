@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.2.1 - 2019-02-14
+
+### Changed
+
+- 所有権インターフェースをCinerinoに統一
+
 ## v12.2.0 - 2019-02-07
 
 ### Added

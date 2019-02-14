@@ -165,7 +165,7 @@ meRouter.delete(
 );
 
 /**
- * Pecorino口座開設
+ * ポイント口座開設
  */
 meRouter.post(
     '/accounts',
@@ -190,12 +190,15 @@ meRouter.post(
                 accountService: accountService
             });
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.pecorino.account.TypeOf> = {
+            // tslint:disable-next-line:max-line-length
+            const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.ownershipInfo.IGood<sskts.factory.ownershipInfo.AccountGoodType.Account>>
+                = {
+                id: '',
                 typeOf: 'OwnershipInfo',
                 // 十分にユニーク
                 identifier: `${sskts.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
                 typeOfGood: {
-                    typeOf: sskts.factory.pecorino.account.TypeOf.Account,
+                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
                     accountType: sskts.factory.accountType.Point,
                     accountNumber: account.accountNumber
                 },
@@ -213,7 +216,7 @@ meRouter.post(
 );
 
 /**
- * Pecorino口座解約
+ * ポイント口座解約
  * 口座の状態を変更するだけで、所有口座リストから削除はしない
  */
 meRouter.put(
@@ -224,9 +227,14 @@ meRouter.put(
         try {
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
-                goodType: sskts.factory.pecorino.account.TypeOf.Account,
-                ownedBy: req.user.username
+            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+                typeOfGood: {
+                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: sskts.factory.accountType.Point
+                },
+                ownedBy: {
+                    id: req.user.sub
+                }
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
@@ -274,7 +282,7 @@ meRouter.put(
 );
 
 /**
- * Pecorino口座削除
+ * ポイント口座削除
  */
 meRouter.delete(
     '/accounts/:accountNumber',
@@ -285,10 +293,16 @@ meRouter.delete(
             const now = new Date();
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
-                goodType: sskts.factory.pecorino.account.TypeOf.Account,
-                ownedBy: req.user.username,
-                ownedAt: now
+            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+                typeOfGood: {
+                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: sskts.factory.accountType.Point
+                },
+                ownedBy: {
+                    id: req.user.sub
+                },
+                ownedFrom: now,
+                ownedThrough: now
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
@@ -308,7 +322,7 @@ meRouter.delete(
 );
 
 /**
- * Pecorino口座検索
+ * ポイント口座検索
  */
 meRouter.get(
     '/accounts',
@@ -317,16 +331,19 @@ meRouter.get(
     async (req, res, next) => {
         try {
             const now = new Date();
-            if (req.user.username === undefined) {
-                throw new sskts.factory.errors.Forbidden('Login required');
-            }
 
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
-                goodType: sskts.factory.pecorino.account.TypeOf.Account,
-                ownedBy: req.user.username,
-                ownedAt: now
+            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+                typeOfGood: {
+                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: sskts.factory.accountType.Point
+                },
+                ownedBy: {
+                    id: req.user.sub
+                },
+                ownedFrom: now,
+                ownedThrough: now
             });
             let accounts: sskts.factory.pecorino.account.IAccount<sskts.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
@@ -350,7 +367,7 @@ meRouter.get(
 );
 
 /**
- * Pecorino取引履歴検索
+ * ポイント口座取引履歴検索
  */
 meRouter.get(
     '/accounts/:accountNumber/actions/moneyTransfer',
@@ -361,10 +378,16 @@ meRouter.get(
             const now = new Date();
             // 口座所有権を検索
             const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search4cinemasunshine({
-                goodType: sskts.factory.pecorino.account.TypeOf.Account,
-                ownedBy: req.user.username,
-                ownedAt: now
+            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+                typeOfGood: {
+                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: sskts.factory.accountType.Point
+                },
+                ownedBy: {
+                    id: req.user.sub
+                },
+                ownedFrom: now,
+                ownedThrough: now
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
@@ -398,11 +421,17 @@ meRouter.get(
     validator,
     async (req, res, next) => {
         try {
+            const now = new Date();
             const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const ownershipInfos = await repository.search4cinemasunshine({
-                goodType: req.params.goodType,
-                ownedBy: req.user.username,
-                ownedAt: new Date()
+            const ownershipInfos = await repository.search({
+                typeOfGood: {
+                    typeOf: req.params.goodType
+                },
+                ownedBy: {
+                    id: req.user.sub
+                },
+                ownedFrom: now,
+                ownedThrough: now
             });
             res.json(ownershipInfos);
         } catch (error) {

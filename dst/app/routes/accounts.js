@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
- * Pecorino口座ルーター
+ * ポイント口座ルーター
  */
 const sskts = require("@motionpicture/sskts-domain");
 // import * as createDebug from 'debug';
