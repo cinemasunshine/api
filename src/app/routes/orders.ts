@@ -39,7 +39,7 @@ ordersRouter.post(
 
             const key = {
                 theaterCode: req.body.theaterCode,
-                confirmationNumber: req.body.confirmationNumber,
+                reservationNumber: req.body.confirmationNumber,
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
             const repository = new sskts.repository.Order(mongoose.connection);
