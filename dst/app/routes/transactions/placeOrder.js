@@ -593,7 +593,7 @@ placeOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
         const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const transactions = yield transactionRepo.search(searchConditions);
         const totalCount = yield transactionRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());

@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.2.2 - 2019-02-15
+
+### Changed
+
+- イベント、注文、所有権、タスク、取引のソート条件なしでの検索を可能にする
+
 ## v12.2.1 - 2019-02-14
 
 ### Changed
