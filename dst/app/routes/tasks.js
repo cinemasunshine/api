@@ -82,7 +82,7 @@ tasksRouter.get('', permitScopes_1.default(['admin']), ...[
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
             page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-            sort: (req.query.sort !== undefined) ? req.query.sort : { runsAt: cinerino.factory.sortType.Descending },
+            sort: req.query.sort,
             name: req.query.name,
             statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
             runsFrom: (req.query.runsFrom !== undefined) ? moment(req.query.runsFrom).toDate() : undefined,

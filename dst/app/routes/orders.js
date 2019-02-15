@@ -105,7 +105,7 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
         const orderRepo = new sskts.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, sort: (req.query.sort !== undefined) ? req.query.sort : { orderDate: sskts.factory.sortType.Descending } });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
         const orders = yield orderRepo.search(searchConditions);
         const totalCount = yield orderRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());
