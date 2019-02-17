@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 管理者としてのユーザー情報編集を追加
+
 ### Changed
 
 ### Deprecated

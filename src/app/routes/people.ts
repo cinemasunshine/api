@@ -3,6 +3,7 @@
  */
 import * as sskts from '@motionpicture/sskts-domain';
 import { Router } from 'express';
+import { NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
@@ -25,6 +26,9 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     scopes: [],
     state: ''
 });
+
+const USER_POOL_ID = <string>process.env.COGNITO_USER_POOL_ID;
+
 const peopleRouter = Router();
 peopleRouter.use(authentication);
 /**
@@ -38,7 +42,7 @@ peopleRouter.get(
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const people = await personRepo.search({
-                userPooId: <string>process.env.COGNITO_USER_POOL_ID,
+                userPooId: USER_POOL_ID,
                 id: req.query.id,
                 username: req.query.username,
                 email: req.query.email,
@@ -64,7 +68,7 @@ peopleRouter.get(
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const person = await personRepo.findById({
-                userPooId: <string>process.env.COGNITO_USER_POOL_ID,
+                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
             res.json(person);
@@ -166,7 +170,7 @@ peopleRouter.get(
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const person = await personRepo.findById({
-                userPooId: <string>process.env.COGNITO_USER_POOL_ID,
+                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
             if (person.memberOf === undefined) {
@@ -191,7 +195,7 @@ peopleRouter.get(
         try {
             const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
             const person = await personRepo.findById({
-                userPooId: <string>process.env.COGNITO_USER_POOL_ID,
+                userPooId: USER_POOL_ID,
                 userId: req.params.id
             });
             if (person.memberOf === undefined) {
@@ -244,6 +248,79 @@ peopleRouter.get(
                 });
             }
             res.json(accounts);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロフィール検索
+ */
+peopleRouter.get(
+    '/:id/profile',
+    permitScopes(['admin']),
+    async (req, res, next) => {
+        try {
+            const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+            const person = await personRepo.findById({
+                userPooId: USER_POOL_ID,
+                userId: req.params.id
+            });
+
+            if (person.memberOf === undefined) {
+                throw new sskts.factory.errors.NotFound('Person.memberOf');
+            }
+
+            const username = person.memberOf.membershipNumber;
+            if (username === undefined) {
+                throw new sskts.factory.errors.NotFound('Person.memberOf.membershipNumber');
+            }
+
+            const profile = await personRepo.getUserAttributes({
+                userPooId: USER_POOL_ID,
+                username: username
+            });
+
+            res.json(profile);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * プロフィール更新
+ */
+peopleRouter.patch(
+    '/:id/profile',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+            const person = await personRepo.findById({
+                userPooId: USER_POOL_ID,
+                userId: req.params.id
+            });
+
+            if (person.memberOf === undefined) {
+                throw new sskts.factory.errors.NotFound('Person.memberOf');
+            }
+
+            const username = person.memberOf.membershipNumber;
+            if (username === undefined) {
+                throw new sskts.factory.errors.NotFound('Person.memberOf.membershipNumber');
+            }
+
+            await personRepo.updateProfile({
+                userPooId: USER_POOL_ID,
+                username: username,
+                profile: req.body
+            });
+
+            res.status(NO_CONTENT)
+                .end();
         } catch (error) {
             next(error);
         }
