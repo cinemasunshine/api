@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable-next-line:no-single-line-block-comment
+/* istanbul ignore file */
 /**
  * redis cacheクライアント
  */
