@@ -10,6 +10,7 @@ import * as moment from 'moment';
 import * as mongoose from 'mongoose';
 
 import ordersRouter from './me/orders';
+import ownershipInfosRouter from './me/ownershipInfos';
 import profileRouter from './me/profile';
 
 import authentication from '../../middlewares/authentication';
@@ -42,6 +43,7 @@ meRouter.use(authentication);
 meRouter.use(requireMember); // 自分のリソースへのアクセスなので、もちろんログイン必須
 
 meRouter.use('/orders', ordersRouter);
+meRouter.use('/ownershipInfos', ownershipInfosRouter);
 meRouter.use('/profile', profileRouter);
 
 /**

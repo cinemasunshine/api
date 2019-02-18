@@ -134,7 +134,8 @@ peopleRouter.get('/:id/ownershipInfos', permitScopes_1.default(['admin']), (_1, 
                 // });
                 break;
             default:
-                throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+            // no op
+            // throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
         res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);
