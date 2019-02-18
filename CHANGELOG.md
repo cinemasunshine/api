@@ -8,11 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- 会員の所有権検索を追加
-
 ### Changed
-
-- 管理者としての所有権検索を、所有物タイプに対して柔軟に検索できるように拡張
 
 ### Deprecated
 
@@ -21,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v12.4.0 - 2019-02-18
+
+### Added
+
+- 会員の所有権検索を追加
+
+### Changed
+
+- 管理者としての所有権検索を、所有物タイプに対して柔軟に検索できるように拡張
 
 ## v12.3.0 - 2019-02-17
 
