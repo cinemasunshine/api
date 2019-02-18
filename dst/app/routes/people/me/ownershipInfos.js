@@ -66,7 +66,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         switch (searchConditions.typeOfGood.typeOf) {
             case sskts.factory.ownershipInfo.AccountGoodType.Account:
                 const accountService = new sskts.pecorinoapi.service.Account({
-                    endpoint: process.env.PECORINO_API_ENDPOINT,
+                    endpoint: process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
                 const accounts = yield accountService.search({

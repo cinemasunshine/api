@@ -8,11 +8,15 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 非同期タスクを統合
+
 ### Changed
 
 ### Deprecated
 
 ### Removed
+
+- devルーターを削除
 
 ### Fixed
 

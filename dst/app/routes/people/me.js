@@ -38,8 +38,8 @@ const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvi
 });
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.PECORINO_API_CLIENT_ID,
-    clientSecret: process.env.PECORINO_API_CLIENT_SECRET,
+    clientId: process.env.PECORINO_CLIENT_ID,
+    clientSecret: process.env.PECORINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
@@ -148,7 +148,7 @@ meRouter.post('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admi
         const now = new Date();
         const accountNumberRepo = new sskts.repository.AccountNumber(redis.getClient());
         const accountService = new sskts.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_API_ENDPOINT,
+            endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
         const account = yield sskts.service.account.open({
@@ -203,7 +203,7 @@ meRouter.put('/accounts/:accountNumber/close', permitScopes_1.default(['aws.cogn
             throw new sskts.factory.errors.NotFound('Account');
         }
         const accountService = new sskts.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_API_ENDPOINT,
+            endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
         yield accountService.close({
@@ -293,7 +293,7 @@ meRouter.get('/accounts', permitScopes_1.default(['aws.cognito.signin.user.admin
         let accounts = [];
         if (accountOwnershipInfos.length > 0) {
             const accountService = new sskts.pecorinoapi.service.Account({
-                endpoint: process.env.PECORINO_API_ENDPOINT,
+                endpoint: process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             accounts = yield accountService.search({
@@ -333,7 +333,7 @@ meRouter.get('/accounts/:accountNumber/actions/moneyTransfer', permitScopes_1.de
             throw new sskts.factory.errors.NotFound('Account');
         }
         const accountService = new sskts.pecorinoapi.service.Account({
-            endpoint: process.env.PECORINO_API_ENDPOINT,
+            endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
         const actions = yield accountService.searchMoneyTransferActions({

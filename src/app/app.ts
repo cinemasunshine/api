@@ -9,10 +9,9 @@ import * as createDebug from 'debug';
 import * as express from 'express';
 import * as expressValidator from 'express-validator';
 import * as helmet from 'helmet';
-import * as mongoose from 'mongoose';
 import * as qs from 'qs';
 
-import mongooseConnectionOptions from '../mongooseConnectionOptions';
+import { connectMongo } from '../connectMongo';
 
 import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
@@ -98,10 +97,13 @@ app.use(expressValidator({})); // this line must be immediately after any of the
 // 静的ファイル
 // app.use(express.static(__dirname + '/../../public'));
 
-mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions)
-    .then(() => { debug('MongoDB connected.'); })
-    // tslint:disable-next-line:no-console
-    .catch(console.error);
+connectMongo({ defaultConnection: true })
+    .then()
+    .catch((err) => {
+        // tslint:disable-next-line:no-console
+        console.error('connetMongo:', err);
+        process.exit(1);
+    });
 
 // routers
 app.use('/', router);

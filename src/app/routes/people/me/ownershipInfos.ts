@@ -67,7 +67,7 @@ ownershipInfosRouter.get(
             switch (searchConditions.typeOfGood.typeOf) {
                 case sskts.factory.ownershipInfo.AccountGoodType.Account:
                     const accountService = new sskts.pecorinoapi.service.Account({
-                        endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                        endpoint: <string>process.env.PECORINO_ENDPOINT,
                         auth: pecorinoAuthClient
                     });
 

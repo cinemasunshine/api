@@ -9,9 +9,9 @@
     ],
     "exclude": [
         "**/*.spec.ts",
-        "src/app/controllers/**/*.ts",
         "src/app/error/**/*.ts",
-        "src/app/routes/**/*.ts"
+        "src/app/routes/**/*.ts",
+        "src/jobs/**/*.ts"
     ],
     "include": [
         "src/**/*.ts"

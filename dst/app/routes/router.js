@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const accounts_1 = require("./accounts");
 const actions_1 = require("./actions");
-const dev_1 = require("./dev");
 const events_1 = require("./events");
 const health_1 = require("./health");
 const orders_1 = require("./orders");
@@ -43,9 +42,4 @@ router.use('/tasks', tasks_1.default);
 router.use('/transactions/placeOrder', placeOrder_1.default);
 router.use('/transactions/returnOrder', returnOrder_1.default);
 router.use('/userPools', userPools_1.default);
-// tslint:disable-next-line:no-single-line-block-comment
-/* istanbul ignore next */
-if (process.env.NODE_ENV !== 'production') {
-    router.use('/dev', dev_1.default);
-}
 exports.default = router;

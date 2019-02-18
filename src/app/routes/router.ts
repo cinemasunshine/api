@@ -5,7 +5,6 @@ import * as express from 'express';
 
 import accountsRouter from './accounts';
 import actionsRouter from './actions';
-import devRouter from './dev';
 import eventsRouter from './events';
 import healthRouter from './health';
 import ordersRouter from './orders';
@@ -45,11 +44,5 @@ router.use('/tasks', tasksRouter);
 router.use('/transactions/placeOrder', placeOrderTransactionsRouter);
 router.use('/transactions/returnOrder', returnOrderTransactionsRouter);
 router.use('/userPools', userPoolsRouter);
-
-// tslint:disable-next-line:no-single-line-block-comment
-/* istanbul ignore next */
-if (process.env.NODE_ENV !== 'production') {
-    router.use('/dev', devRouter);
-}
 
 export default router;

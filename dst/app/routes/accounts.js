@@ -22,8 +22,8 @@ const accountsRouter = express_1.Router();
 // const debug = createDebug('sskts-api:routes:accounts');
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: process.env.PECORINO_API_CLIENT_ID,
-    clientSecret: process.env.PECORINO_API_CLIENT_SECRET,
+    clientId: process.env.PECORINO_CLIENT_ID,
+    clientSecret: process.env.PECORINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
@@ -39,7 +39,7 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
-            endpoint: process.env.PECORINO_API_ENDPOINT,
+            endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
         yield sskts.service.account.deposit({
