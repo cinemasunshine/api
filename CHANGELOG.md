@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 会員の所有権検索を追加
+
 ### Changed
+
+- 管理者としての所有権検索を、所有物タイプに対して柔軟に検索できるように拡張
 
 ### Deprecated
 

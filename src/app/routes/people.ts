@@ -149,7 +149,8 @@ peopleRouter.get(
                     break;
 
                 default:
-                    throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+                // no op
+                // throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 
             res.set('X-Total-Count', totalCount.toString());
