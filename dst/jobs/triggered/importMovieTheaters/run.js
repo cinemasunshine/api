@@ -15,7 +15,7 @@ const sskts = require("@motionpicture/sskts-domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('cinerino-api:jobs');
+const debug = createDebug('sskts-api:jobs');
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob('*/10 * * * *', () => __awaiter(this, void 0, void 0, function* () {

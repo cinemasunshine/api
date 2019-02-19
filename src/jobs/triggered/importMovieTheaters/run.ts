@@ -7,7 +7,7 @@ import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
 
-const debug = createDebug('cinerino-api:jobs');
+const debug = createDebug('sskts-api:jobs');
 
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });

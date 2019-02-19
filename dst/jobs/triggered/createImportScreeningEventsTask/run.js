@@ -16,7 +16,7 @@ const cron_1 = require("cron");
 const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('cinerino-api:jobs');
+const debug = createDebug('sskts-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
  */

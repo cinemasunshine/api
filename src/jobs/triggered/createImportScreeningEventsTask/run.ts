@@ -8,7 +8,7 @@ import * as moment from 'moment';
 
 import { connectMongo } from '../../../connectMongo';
 
-const debug = createDebug('cinerino-api:jobs');
+const debug = createDebug('sskts-api:jobs');
 
 /**
  * 上映イベントを何週間後までインポートするか
