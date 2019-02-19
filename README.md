@@ -49,6 +49,7 @@ npm start
 | `REDIS_HOST`                                         | true                  |             | 在庫状況保管用Redis Cache host             |
 | `REDIS_PORT`                                         | true                  |             | 在庫状況保管用Redis Cache port             |
 | `REDIS_KEY`                                          | true                  |             | 在庫状況保管用Redis Cache key              |
+| `REDIS_TLS_SERVERNAME`                               | false                 |             | Redis Cache host                           |
 | `RATE_LIMIT_REDIS_HOST`                              | true                  |             | レート制限用Redis Cache host               |
 | `RATE_LIMIT_REDIS_PORT`                              | true                  |             | レート制限用Redis Cache port               |
 | `RATE_LIMIT_REDIS_KEY`                               | true                  |             | レート制限用Redis Cache key                |
@@ -72,6 +73,8 @@ npm start
 | `WEBSITE_NODE_DEFAULT_VERSION`                       | only on Azure WebApps |             | Node.js version                            |
 | `JOBS_STOPPED`                                       | true                  | 1 or 0      | 非同期ジョブ停止フラグ                     |
 | `LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS`            | true                  |             | 上映イベントを何週間後までインポートするか |
+| `PROJECT_ID`                                         | true                  |             | Cinerino Project ID                        |
+| `TELEMETRY_API_ENDPOINT`                             | true                  |             | CinerinoTelemetryエンドポイント            |
 
 ## tslint
 
