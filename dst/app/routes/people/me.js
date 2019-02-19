@@ -100,6 +100,7 @@ meRouter.put('/contacts', permitScopes_1.default(['aws.cognito.signin.user.admin
 }));
 /**
  * 会員クレジットカード検索
+ * @deprecated Use /people/me/ownershipInfos/creditCards
  */
 meRouter.get('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
@@ -113,6 +114,7 @@ meRouter.get('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.ad
 }));
 /**
  * 会員クレジットカード追加
+ * @deprecated Use /people/me/ownershipInfos/creditCards
  */
 meRouter.post('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), (__1, __2, next) => {
     next();
@@ -127,6 +129,7 @@ meRouter.post('/creditCards', permitScopes_1.default(['aws.cognito.signin.user.a
 }));
 /**
  * 会員クレジットカード削除
+ * @deprecated Use /people/me/ownershipInfos/creditCards/:cardSeq
  */
 meRouter.delete('/creditCards/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin', 'people.creditCards']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {

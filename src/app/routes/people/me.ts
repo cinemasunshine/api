@@ -114,6 +114,7 @@ meRouter.put(
 
 /**
  * 会員クレジットカード検索
+ * @deprecated Use /people/me/ownershipInfos/creditCards
  */
 meRouter.get(
     '/creditCards',
@@ -131,6 +132,7 @@ meRouter.get(
 
 /**
  * 会員クレジットカード追加
+ * @deprecated Use /people/me/ownershipInfos/creditCards
  */
 meRouter.post(
     '/creditCards',
@@ -151,6 +153,7 @@ meRouter.post(
 
 /**
  * 会員クレジットカード削除
+ * @deprecated Use /people/me/ownershipInfos/creditCards/:cardSeq
  */
 meRouter.delete(
     '/creditCards/:cardSeq',

@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 - 非同期タスクを統合
+- 会員所有権ルーターに口座、クレジットカードのエンドポイントを追加
 
 ### Changed
 

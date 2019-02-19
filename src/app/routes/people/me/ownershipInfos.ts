@@ -11,9 +11,9 @@ import validator from '../../../middlewares/validator';
 
 // import * as redis from '../../../../redis';
 
-// import accountsRouter from './ownershipInfos/accounts';
-// import creditCardsRouter from './ownershipInfos/creditCards';
-// import reservationsRouter from './ownershipInfos/reservations';
+import accountsRouter from './ownershipInfos/accounts';
+import creditCardsRouter from './ownershipInfos/creditCards';
+import reservationsRouter from './ownershipInfos/reservations';
 
 // const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 // const chevreAuthClient = new sskts.chevre.auth.ClientCredentials({
@@ -31,9 +31,9 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 const ownershipInfosRouter = Router();
-// ownershipInfosRouter.use('/accounts', accountsRouter);
-// ownershipInfosRouter.use('/creditCards', creditCardsRouter);
-// ownershipInfosRouter.use('/reservations', reservationsRouter);
+ownershipInfosRouter.use('/accounts', accountsRouter);
+ownershipInfosRouter.use('/creditCards', creditCardsRouter);
+ownershipInfosRouter.use('/reservations', reservationsRouter);
 
 /**
  * 所有権検索
