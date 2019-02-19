@@ -21,6 +21,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 返品処理をpecorino@2.0.0に対応
+
 ### Security
 
 ## v12.4.0 - 2019-02-18
