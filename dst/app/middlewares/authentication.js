@@ -10,11 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * oauthミドルウェア
- * @module middlewares.authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
-const express_middleware_1 = require("@motionpicture/express-middleware");
 const sskts = require("@motionpicture/sskts-domain");
+const express_middleware_1 = require("@motionpicture/express-middleware");
 // 許可発行者リスト
 const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
 // tslint:disable-next-line:no-single-line-block-comment
@@ -24,18 +23,50 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
         yield express_middleware_1.cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: (user, token) => __awaiter(this, void 0, void 0, function* () {
-                req.user = user;
-                req.accessToken = token;
-                req.agent = {
-                    typeOf: sskts.factory.personType.Person,
-                    id: user.sub,
-                    memberOf: (user.username !== undefined) ? {
+                const identifier = [
+                    {
+                        name: 'tokenIssuer',
+                        value: user.iss
+                    },
+                    {
+                        name: 'clientId',
+                        value: user.client_id
+                    },
+                    {
+                        name: 'hostname',
+                        value: req.hostname
+                    }
+                ];
+                // リクエストユーザーの属性を識別子に追加
+                try {
+                    identifier.push(...Object.keys(user)
+                        .map((key) => {
+                        return {
+                            name: key,
+                            value: user[key].toString()
+                        };
+                    }));
+                }
+                catch (error) {
+                    // no op
+                }
+                let programMembership;
+                if (user.username !== undefined) {
+                    programMembership = {
                         typeOf: 'ProgramMembership',
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
                         award: [],
                         url: user.iss
-                    } : undefined
+                    };
+                }
+                req.user = user;
+                req.accessToken = token;
+                req.agent = {
+                    typeOf: sskts.factory.personType.Person,
+                    id: user.sub,
+                    memberOf: programMembership,
+                    identifier: identifier
                 };
                 next();
             }),

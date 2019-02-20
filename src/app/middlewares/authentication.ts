@@ -1,10 +1,10 @@
 /**
  * oauthミドルウェア
- * @module middlewares.authentication
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
-import { cognitoAuth } from '@motionpicture/express-middleware';
 import * as sskts from '@motionpicture/sskts-domain';
+
+import { cognitoAuth } from '@motionpicture/express-middleware';
 import { NextFunction, Request, Response } from 'express';
 
 // 許可発行者リスト
@@ -17,19 +17,54 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         await cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {
-                req.user = user;
-                req.accessToken = token;
-                req.agent = {
-                    typeOf: sskts.factory.personType.Person,
-                    id: user.sub,
-                    memberOf: (user.username !== undefined) ? <any>{
+                const identifier: sskts.factory.person.IIdentifier = [
+                    {
+                        name: 'tokenIssuer',
+                        value: user.iss
+                    },
+                    {
+                        name: 'clientId',
+                        value: user.client_id
+                    },
+                    {
+                        name: 'hostname',
+                        value: req.hostname
+                    }
+                ];
+
+                // リクエストユーザーの属性を識別子に追加
+                try {
+                    identifier.push(...Object.keys(user)
+                        .map((key) => {
+                            return {
+                                name: key,
+                                value: (<any>user)[key].toString()
+                            };
+                        }));
+                } catch (error) {
+                    // no op
+                }
+
+                let programMembership: sskts.factory.programMembership.IProgramMembership | undefined;
+                if (user.username !== undefined) {
+                    programMembership = {
                         typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
                         award: [],
                         url: user.iss
-                    } : undefined
+                    };
+                }
+
+                req.user = user;
+                req.accessToken = token;
+                req.agent = {
+                    typeOf: sskts.factory.personType.Person,
+                    id: user.sub,
+                    memberOf: programMembership,
+                    identifier: identifier
                 };
+
                 next();
             },
             unauthorizedHandler: (err) => {

@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- リクエストユーザー情報をアクションエージェントの識別子に追加するように変更
+
 ### Deprecated
 
 ### Removed

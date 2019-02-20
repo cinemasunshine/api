@@ -75,6 +75,8 @@ npm start
 | `LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS`            | true                  |             | 上映イベントを何週間後までインポートするか |
 | `PROJECT_ID`                                         | true                  |             | Cinerino Project ID                        |
 | `TELEMETRY_API_ENDPOINT`                             | true                  |             | CinerinoTelemetryエンドポイント            |
+| `DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN`                 | true                  |             | 開発者LINE通知アクセストークン             |
+| `LINE_NOTIFY_URL`                                    | true                  |             | https://notify-api.line.me/api/notify      |
 
 ## tslint
 
