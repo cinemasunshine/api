@@ -18,6 +18,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.5.0 - 2019-02-21
+
+### Added
+
+- 非同期タスクを統合
+- 会員所有権ルーターに口座、クレジットカードのエンドポイントを追加
+
+### Changed
+
+- リクエストユーザー情報をアクションエージェントの識別子に追加するように変更
+
+### Removed
+
+- devルーターを削除
+
+### Fixed
+
+- 返品処理をpecorino@2.0.0に対応
+
 ## v12.4.0 - 2019-02-18
 
 ### Added

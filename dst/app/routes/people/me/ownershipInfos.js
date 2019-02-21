@@ -18,9 +18,9 @@ const mongoose = require("mongoose");
 const permitScopes_1 = require("../../../middlewares/permitScopes");
 const validator_1 = require("../../../middlewares/validator");
 // import * as redis from '../../../../redis';
-// import accountsRouter from './ownershipInfos/accounts';
-// import creditCardsRouter from './ownershipInfos/creditCards';
-// import reservationsRouter from './ownershipInfos/reservations';
+const accounts_1 = require("./ownershipInfos/accounts");
+const creditCards_1 = require("./ownershipInfos/creditCards");
+const reservations_1 = require("./ownershipInfos/reservations");
 // const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
 // const chevreAuthClient = new sskts.chevre.auth.ClientCredentials({
 //     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
@@ -37,9 +37,9 @@ const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     state: ''
 });
 const ownershipInfosRouter = express_1.Router();
-// ownershipInfosRouter.use('/accounts', accountsRouter);
-// ownershipInfosRouter.use('/creditCards', creditCardsRouter);
-// ownershipInfosRouter.use('/reservations', reservationsRouter);
+ownershipInfosRouter.use('/accounts', accounts_1.default);
+ownershipInfosRouter.use('/creditCards', creditCards_1.default);
+ownershipInfosRouter.use('/reservations', reservations_1.default);
 /**
  * 所有権検索
  */
@@ -66,7 +66,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
         switch (searchConditions.typeOfGood.typeOf) {
             case sskts.factory.ownershipInfo.AccountGoodType.Account:
                 const accountService = new sskts.pecorinoapi.service.Account({
-                    endpoint: process.env.PECORINO_API_ENDPOINT,
+                    endpoint: process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
                 const accounts = yield accountService.search({

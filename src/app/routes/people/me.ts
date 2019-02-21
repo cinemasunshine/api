@@ -33,8 +33,8 @@ const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvi
 });
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_API_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_API_CLIENT_SECRET,
+    clientId: <string>process.env.PECORINO_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
@@ -114,6 +114,7 @@ meRouter.put(
 
 /**
  * 会員クレジットカード検索
+ * @deprecated Use /people/me/ownershipInfos/creditCards
  */
 meRouter.get(
     '/creditCards',
@@ -131,6 +132,7 @@ meRouter.get(
 
 /**
  * 会員クレジットカード追加
+ * @deprecated Use /people/me/ownershipInfos/creditCards
  */
 meRouter.post(
     '/creditCards',
@@ -151,6 +153,7 @@ meRouter.post(
 
 /**
  * 会員クレジットカード削除
+ * @deprecated Use /people/me/ownershipInfos/creditCards/:cardSeq
  */
 meRouter.delete(
     '/creditCards/:cardSeq',
@@ -182,7 +185,7 @@ meRouter.post(
             const now = new Date();
             const accountNumberRepo = new sskts.repository.AccountNumber(redis.getClient());
             const accountService = new sskts.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             const account = await sskts.service.account.open({
@@ -244,7 +247,7 @@ meRouter.put(
             }
 
             const accountService = new sskts.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             await accountService.close({
@@ -350,7 +353,7 @@ meRouter.get(
             let accounts: sskts.factory.pecorino.account.IAccount<sskts.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
                 const accountService = new sskts.pecorinoapi.service.Account({
-                    endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                    endpoint: <string>process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
 
@@ -397,7 +400,7 @@ meRouter.get(
             }
 
             const accountService = new sskts.pecorinoapi.service.Account({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             const actions = await accountService.searchMoneyTransferActions({

@@ -22,8 +22,8 @@ const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
 
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_API_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_API_CLIENT_SECRET,
+    clientId: <string>process.env.PECORINO_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
@@ -508,7 +508,7 @@ placeOrderTransactionsRouter.post(
         try {
             // pecorino転送取引サービスクライアントを生成
             const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
@@ -549,7 +549,7 @@ placeOrderTransactionsRouter.delete(
         try {
             // pecorino転送取引サービスクライアントを生成
             const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
@@ -585,7 +585,7 @@ placeOrderTransactionsRouter.post(
         try {
             // pecorino転送取引サービスクライアントを生成
             const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
@@ -621,7 +621,7 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
-                endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({

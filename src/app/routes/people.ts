@@ -21,8 +21,8 @@ const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvi
 });
 const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
-    clientId: <string>process.env.PECORINO_API_CLIENT_ID,
-    clientSecret: <string>process.env.PECORINO_API_CLIENT_SECRET,
+    clientId: <string>process.env.PECORINO_CLIENT_ID,
+    clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
     scopes: [],
     state: ''
 });
@@ -113,7 +113,7 @@ peopleRouter.get(
             switch (searchConditions.typeOfGood.typeOf) {
                 case sskts.factory.ownershipInfo.AccountGoodType.Account:
                     const accountService = new sskts.pecorinoapi.service.Account({
-                        endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                        endpoint: <string>process.env.PECORINO_ENDPOINT,
                         auth: pecorinoAuthClient
                     });
 
@@ -238,7 +238,7 @@ peopleRouter.get(
             let accounts: sskts.factory.pecorino.account.IAccount<sskts.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
                 const accountService = new sskts.pecorinoapi.service.Account({
-                    endpoint: <string>process.env.PECORINO_API_ENDPOINT,
+                    endpoint: <string>process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
                 accounts = await accountService.search({
