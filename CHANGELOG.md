@@ -8,14 +8,26 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## v12.5.0 - 2019-02-21
+
+### Added
+
 - 非同期タスクを統合
 - 会員所有権ルーターに口座、クレジットカードのエンドポイントを追加
 
 ### Changed
 
 - リクエストユーザー情報をアクションエージェントの識別子に追加するように変更
-
-### Deprecated
 
 ### Removed
 
@@ -24,8 +36,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 - 返品処理をpecorino@2.0.0に対応
-
-### Security
 
 ## v12.4.0 - 2019-02-18
 
