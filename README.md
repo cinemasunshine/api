@@ -46,13 +46,10 @@ npm start
 | `COA_ENDPOINT`                                       | true                  |             | COA API endpoint                           |
 | `COA_REFRESH_TOKEN`                                  | true                  |             | COA API refresh token                      |
 | `SSKTS_DEVELOPER_EMAIL`                              | true                  |             | 開発者通知用メールアドレス                 |
-| `REDIS_HOST`                                         | true                  |             | 在庫状況保管用Redis Cache host             |
-| `REDIS_PORT`                                         | true                  |             | 在庫状況保管用Redis Cache port             |
-| `REDIS_KEY`                                          | true                  |             | 在庫状況保管用Redis Cache key              |
+| `REDIS_HOST`                                         | true                  |             | Redis Cache host                           |
+| `REDIS_PORT`                                         | true                  |             | Redis Cache port                           |
+| `REDIS_KEY`                                          | true                  |             | Redis Cache key                            |
 | `REDIS_TLS_SERVERNAME`                               | false                 |             | Redis Cache host                           |
-| `RATE_LIMIT_REDIS_HOST`                              | true                  |             | レート制限用Redis Cache host               |
-| `RATE_LIMIT_REDIS_PORT`                              | true                  |             | レート制限用Redis Cache port               |
-| `RATE_LIMIT_REDIS_KEY`                               | true                  |             | レート制限用Redis Cache key                |
 | `TRANSACTION_RATE_LIMIT_AGGREGATION_UNIT_IN_SECONDS` | true                  |             | 進行取引レート制限単位(秒)                 |
 | `TRANSACTION_RATE_LIMIT_THRESHOLD`                   | true                  |             | 進行取引レート制限閾値                     |
 | `RESOURECE_SERVER_IDENTIFIER`                        | true                  |             | リソースサーバーとしての固有識別子         |
