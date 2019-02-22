@@ -44,30 +44,27 @@ export default async () => {
                     });
 
                     if (seller !== undefined) {
-                        // 期間が長い場合、タスクの処理が重くなるので、1週間分ずつタスクを作成
-                        await Promise.all([...Array(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)].map(async (_, i) => {
-                            const importFrom = moment(now)
-                                .add(i, 'weeks')
-                                .toDate();
-                            const importThrough = moment(importFrom)
-                                .add(1, 'weeks')
-                                .toDate();
-                            const taskAttributes: sskts.factory.task.IAttributes<sskts.factory.taskName.ImportScreeningEvents> = {
-                                name: sskts.factory.taskName.ImportScreeningEvents,
-                                status: sskts.factory.taskStatus.Ready,
-                                runsAt: now,
-                                remainingNumberOfTries: 1,
-                                numberOfTried: 0,
-                                executionResults: [],
-                                data: {
-                                    locationBranchCode: branchCode,
-                                    importFrom: importFrom,
-                                    importThrough: importThrough
-                                }
-                            };
-                            await taskRepo.save(taskAttributes);
-                            debug('task saved', movieTheater.branchCode);
-                        }));
+                        const importFrom = moment(now)
+                            .add(0, 'weeks')
+                            .toDate();
+                        const importThrough = moment(importFrom)
+                            .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+                            .toDate();
+                        const taskAttributes: sskts.factory.task.IAttributes<sskts.factory.taskName.ImportScreeningEvents> = {
+                            name: sskts.factory.taskName.ImportScreeningEvents,
+                            status: sskts.factory.taskStatus.Ready,
+                            runsAt: now,
+                            remainingNumberOfTries: 1,
+                            numberOfTried: 0,
+                            executionResults: [],
+                            data: {
+                                locationBranchCode: branchCode,
+                                importFrom: importFrom,
+                                importThrough: importThrough
+                            }
+                        };
+                        await taskRepo.save(taskAttributes);
+                        debug('task saved', movieTheater.branchCode);
                     }
                 } catch (error) {
                     // tslint:disable-next-line:no-console

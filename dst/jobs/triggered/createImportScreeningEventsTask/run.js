@@ -43,30 +43,27 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                         && m.location.branchCode === branchCode;
                 });
                 if (seller !== undefined) {
-                    // 期間が長い場合、タスクの処理が重くなるので、1週間分ずつタスクを作成
-                    yield Promise.all([...Array(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)].map((_, i) => __awaiter(this, void 0, void 0, function* () {
-                        const importFrom = moment(now)
-                            .add(i, 'weeks')
-                            .toDate();
-                        const importThrough = moment(importFrom)
-                            .add(1, 'weeks')
-                            .toDate();
-                        const taskAttributes = {
-                            name: sskts.factory.taskName.ImportScreeningEvents,
-                            status: sskts.factory.taskStatus.Ready,
-                            runsAt: now,
-                            remainingNumberOfTries: 1,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                locationBranchCode: branchCode,
-                                importFrom: importFrom,
-                                importThrough: importThrough
-                            }
-                        };
-                        yield taskRepo.save(taskAttributes);
-                        debug('task saved', movieTheater.branchCode);
-                    })));
+                    const importFrom = moment(now)
+                        .add(0, 'weeks')
+                        .toDate();
+                    const importThrough = moment(importFrom)
+                        .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+                        .toDate();
+                    const taskAttributes = {
+                        name: sskts.factory.taskName.ImportScreeningEvents,
+                        status: sskts.factory.taskStatus.Ready,
+                        runsAt: now,
+                        remainingNumberOfTries: 1,
+                        numberOfTried: 0,
+                        executionResults: [],
+                        data: {
+                            locationBranchCode: branchCode,
+                            importFrom: importFrom,
+                            importThrough: importThrough
+                        }
+                    };
+                    yield taskRepo.save(taskAttributes);
+                    debug('task saved', movieTheater.branchCode);
                 }
             }
             catch (error) {
