@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v12.5.2 - 2019-02-22
+
+### Changed
+
+- イベント在庫仕入れタスク作成スケジュールを調整
+- イベント在庫仕入れタスクを一週間分ずつに分割して作成するように変更
+
 ## v12.5.1 - 2019-02-22
 
 ### Changed
