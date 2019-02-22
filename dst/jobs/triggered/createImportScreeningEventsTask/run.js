@@ -26,7 +26,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob('* * * * *', () => __awaiter(this, void 0, void 0, function* () {
+    const job = new cron_1.CronJob('*/30 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         const now = new Date();
         const placeRepo = new sskts.repository.Place(connection);
         const sellerRepo = new sskts.repository.Seller(connection);
