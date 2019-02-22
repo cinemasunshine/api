@@ -10,7 +10,7 @@ export default async () => {
 
     let count = 0;
 
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 0; // 処理としてCPU使用量が多めなので、並列実行数は少なめにセット
     const INTERVAL_MILLISECONDS = 100;
     const taskRepo = new sskts.repository.Task(connection);
 

@@ -16,7 +16,7 @@ const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
-    const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
+    const MAX_NUBMER_OF_PARALLEL_TASKS = 0; // 処理としてCPU使用量が多めなので、並列実行数は少なめにセット
     const INTERVAL_MILLISECONDS = 100;
     const taskRepo = new sskts.repository.Task(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {

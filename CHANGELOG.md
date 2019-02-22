@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベント在庫仕入れタスク並列実行数を調整
+- 取引レート制限に使用するRedisリソースをその他のRedisリソースと統合
+
 ### Deprecated
 
 ### Removed

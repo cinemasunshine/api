@@ -41,15 +41,14 @@ const THRESHOLD = parseInt(process.env.TRANSACTION_RATE_LIMIT_THRESHOLD, 10);
 /**
  * 進行中取引の接続回数制限ミドルウェア
  * 取引IDを使用して動的にスコープを作成する
- * @const
  */
 const rateLimit4transactionInProgress = middlewares.rateLimit({
     redisClient: new ioredis({
-        host: process.env.RATE_LIMIT_REDIS_HOST,
+        host: process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
-        port: parseInt(process.env.RATE_LIMIT_REDIS_PORT, 10),
-        password: process.env.RATE_LIMIT_REDIS_KEY,
-        tls: { servername: process.env.RATE_LIMIT_REDIS_HOST }
+        port: parseInt(process.env.REDIS_PORT, 10),
+        password: process.env.REDIS_KEY,
+        tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
     }),
     aggregationUnitInSeconds: AGGREGATION_UNIT_IN_SECONDS,
     threshold: THRESHOLD,
