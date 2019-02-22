@@ -22,8 +22,10 @@ export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(
-        '*/10 * * * *',
+        '*/30 * * * *',
         async () => {
+            const now = new Date();
+
             const placeRepo = new sskts.repository.Place(connection);
             const sellerRepo = new sskts.repository.Seller(connection);
             const taskRepo = new sskts.repository.Task(connection);
@@ -31,12 +33,6 @@ export default async () => {
             // 全劇場組織を取得
             const sellers = await sellerRepo.search({});
             const movieTheaters = await placeRepo.searchMovieTheaters({});
-            const importFrom = moment()
-                .toDate();
-            const importThrough = moment(importFrom)
-                .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
-                .toDate();
-            const runsAt = new Date();
 
             await Promise.all(movieTheaters.map(async (movieTheater) => {
                 try {
@@ -48,21 +44,30 @@ export default async () => {
                     });
 
                     if (seller !== undefined) {
-                        const taskAttributes: sskts.factory.task.IAttributes<sskts.factory.taskName.ImportScreeningEvents> = {
-                            name: sskts.factory.taskName.ImportScreeningEvents,
-                            status: sskts.factory.taskStatus.Ready,
-                            runsAt: runsAt,
-                            remainingNumberOfTries: 1,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                locationBranchCode: branchCode,
-                                importFrom: importFrom,
-                                importThrough: importThrough
-                            }
-                        };
-                        await taskRepo.save(taskAttributes);
-                        debug('task saved', movieTheater.branchCode);
+                        // 期間が長い場合、タスクの処理が重くなるので、1週間分ずつタスクを作成
+                        await Promise.all([...Array(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS)].map(async (_, i) => {
+                            const importFrom = moment(now)
+                                .add(i, 'weeks')
+                                .toDate();
+                            const importThrough = moment(importFrom)
+                                .add(1, 'weeks')
+                                .toDate();
+                            const taskAttributes: sskts.factory.task.IAttributes<sskts.factory.taskName.ImportScreeningEvents> = {
+                                name: sskts.factory.taskName.ImportScreeningEvents,
+                                status: sskts.factory.taskStatus.Ready,
+                                runsAt: now,
+                                remainingNumberOfTries: 1,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    locationBranchCode: branchCode,
+                                    importFrom: importFrom,
+                                    importThrough: importThrough
+                                }
+                            };
+                            await taskRepo.save(taskAttributes);
+                            debug('task saved', movieTheater.branchCode);
+                        }));
                     }
                 } catch (error) {
                     // tslint:disable-next-line:no-console

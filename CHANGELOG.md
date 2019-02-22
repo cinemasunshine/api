@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- イベント在庫仕入れタスク作成スケジュールを調整
+- イベント在庫仕入れタスクを一週間分ずつに分割して作成するように変更
+
 ### Deprecated
 
 ### Removed
