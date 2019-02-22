@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベント在庫仕入れタスクを一週間分ずつに分割する処理を削除
-
 ### Deprecated
 
 ### Removed
@@ -19,6 +17,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v12.5.3 - 2019-02-22
+
+### Changed
+
+- イベント在庫仕入れタスクを一週間分ずつに分割する処理を削除
 
 ## v12.5.2 - 2019-02-22
 
