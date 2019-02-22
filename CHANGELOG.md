@@ -10,9 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- イベント在庫仕入れタスク並列実行数を調整
-- 取引レート制限に使用するRedisリソースをその他のRedisリソースと統合
-
 ### Deprecated
 
 ### Removed
@@ -20,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v12.5.1 - 2019-02-22
+
+### Changed
+
+- イベント在庫仕入れタスク並列実行数を調整
+- 取引レート制限に使用するRedisリソースをその他のRedisリソースと統合
 
 ## v12.5.0 - 2019-02-21
 
