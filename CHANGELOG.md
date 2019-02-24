@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
+- 日またぎのイベントをCOAから正しくインポートできるように調整
+
 ### Security
 
 ## v12.5.3 - 2019-02-22
