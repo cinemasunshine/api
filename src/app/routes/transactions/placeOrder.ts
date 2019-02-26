@@ -452,6 +452,7 @@ placeOrderTransactionsRouter.post(
                 authorizeObject: authorizeObject
             })({
                 action: new sskts.repository.Action(mongoose.connection),
+                paymentMethod: new sskts.repository.PaymentMethod(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection)
             });
 
