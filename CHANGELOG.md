@@ -8,12 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- ムビチケ決済方法検索を追加
-
 ### Changed
-
-- 注文コレクションのインデックス調整
-- 取引コレクションのインデックス調整
 
 ### Deprecated
 
@@ -21,9 +16,22 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Fixed
 
-- 日またぎのイベントをCOAから正しくインポートできるように調整
-
 ### Security
+
+## v12.6.0 - 2019-02-26
+
+### Added
+
+- ムビチケ決済方法検索を追加
+
+### Changed
+
+- 注文コレクションのインデックス調整
+- 取引コレクションのインデックス調整
+
+### Fixed
+
+- 日またぎのイベントをCOAから正しくインポートできるように調整
 
 ## v12.5.3 - 2019-02-22
 
