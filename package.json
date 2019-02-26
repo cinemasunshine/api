@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/express-middleware": "^0.1.0",
-    "@motionpicture/sskts-domain": "^29.1.5",
+    "@motionpicture/sskts-domain": "^29.1.6",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "cron": "^1.6.0",

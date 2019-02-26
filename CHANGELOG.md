@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- ムビチケ決済方法検索を追加
+
 ### Changed
 
 - 注文コレクションのインデックス調整
