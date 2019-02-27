@@ -101,7 +101,11 @@ placeOrderTransactionsRouter.post(
                 },
                 object: {
                     clientUser: req.user,
-                    passport: req.body.passportToken
+                    passport: {
+                        issuer: '',
+                        token: <string>req.body.passportToken,
+                        secret: <string>process.env.WAITER_SECRET
+                    }
                 }
             })({
                 seller: new sskts.repository.Seller(mongoose.connection),

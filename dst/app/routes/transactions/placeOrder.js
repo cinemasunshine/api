@@ -92,7 +92,11 @@ placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito
             },
             object: {
                 clientUser: req.user,
-                passport: req.body.passportToken
+                passport: {
+                    issuer: '',
+                    token: req.body.passportToken,
+                    secret: process.env.WAITER_SECRET
+                }
             }
         })({
             seller: new sskts.repository.Seller(mongoose.connection),
