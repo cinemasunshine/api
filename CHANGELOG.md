@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- 座席予約承認アクションインターフェースをCinerino化
+- 承認アクションの目的インターフェースを最小化
+
 ### Deprecated
 
 ### Removed

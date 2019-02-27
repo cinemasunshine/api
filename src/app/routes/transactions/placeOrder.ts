@@ -85,15 +85,24 @@ placeOrderTransactionsRouter.post(
                 // tslint:disable-next-line:no-magic-numbers
                 ? moment.unix(parseInt(req.body.expires, 10)).toDate()
                 : moment(req.body.expires).toDate();
+
             const transaction = await sskts.service.transaction.placeOrderInProgress.start({
                 expires: expires,
-                customer: req.agent,
+                agent: {
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ]
+                },
                 seller: {
                     typeOf: sskts.factory.organizationType.MovieTheater,
                     id: req.body.sellerId
                 },
-                clientUser: req.user,
-                passportToken: req.body.passportToken
+                object: {
+                    clientUser: req.user,
+                    passport: req.body.passportToken
+                }
             })({
                 seller: new sskts.repository.Seller(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -128,13 +137,15 @@ placeOrderTransactionsRouter.put(
     async (req, res, next) => {
         try {
             const contact = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                contact: {
-                    familyName: req.body.familyName,
-                    givenName: req.body.givenName,
-                    email: req.body.email,
-                    telephone: req.body.telephone
+                id: req.params.transactionId,
+                agent: { id: req.user.sub },
+                object: {
+                    customerContact: {
+                        familyName: req.body.familyName,
+                        givenName: req.body.givenName,
+                        email: req.body.email,
+                        telephone: req.body.telephone
+                    }
                 }
             })({
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -161,10 +172,12 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                eventIdentifier: req.body.eventIdentifier,
-                offers: req.body.offers
+                object: {
+                    event: { id: req.body.eventIdentifier },
+                    acceptedOffer: req.body.offers
+                },
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -189,9 +202,9 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -218,11 +231,13 @@ placeOrderTransactionsRouter.patch(
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId,
-                eventIdentifier: req.body.eventIdentifier,
-                offers: req.body.offers
+                object: {
+                    event: { id: req.body.eventIdentifier },
+                    acceptedOffer: req.body.offers
+                },
+                agent: { id: req.user.sub },
+                transaction: { id: req.params.transactionId },
+                id: req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -649,10 +664,13 @@ placeOrderTransactionsRouter.post(
         try {
             const orderDate = new Date();
             const order = await sskts.service.transaction.placeOrderInProgress.confirm({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
-                orderDate: orderDate
+                id: req.params.transactionId,
+                agent: { id: req.user.sub },
+                result: { order: { orderDate: orderDate } },
+                options: {
+                    ...req.body,
+                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
+                }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -660,6 +678,13 @@ placeOrderTransactionsRouter.post(
                 seller: new sskts.repository.Seller(mongoose.connection)
             });
             debug('transaction confirmed', order);
+
+            // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+            // tslint:disable-next-line:no-floating-promises
+            sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Confirmed)({
+                task: new sskts.repository.Task(mongoose.connection),
+                transaction: new sskts.repository.Transaction(mongoose.connection)
+            });
 
             res.status(CREATED).json(order);
         } catch (error) {
