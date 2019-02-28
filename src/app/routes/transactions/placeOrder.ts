@@ -602,6 +602,7 @@ placeOrderTransactionsRouter.post(
                 object: {
                     typeOf: sskts.factory.paymentMethodType.Account,
                     amount: Number(req.body.amount),
+                    currency: sskts.factory.accountType.Point,
                     fromAccount: {
                         accountType: sskts.factory.accountType.Point,
                         accountNumber: <string>req.body.fromAccountNumber

@@ -491,6 +491,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             object: {
                 typeOf: sskts.factory.paymentMethodType.Account,
                 amount: Number(req.body.amount),
+                currency: sskts.factory.accountType.Point,
                 fromAccount: {
                     accountType: sskts.factory.accountType.Point,
                     accountNumber: req.body.fromAccountNumber
