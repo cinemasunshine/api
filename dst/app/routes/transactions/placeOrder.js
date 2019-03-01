@@ -617,7 +617,22 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
         const order = yield sskts.service.transaction.placeOrderInProgress.confirm({
             id: req.params.transactionId,
             agent: { id: req.user.sub },
-            result: { order: { orderDate: orderDate } },
+            result: {
+                order: {
+                    orderDate: orderDate,
+                    confirmationNumber: (params) => {
+                        const offer = params.acceptedOffers.shift();
+                        // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
+                        if (offer !== undefined
+                            && offer.itemOffered.typeOf === sskts.factory.reservationType.EventReservation) {
+                            return Number(offer.itemOffered.reservationNumber);
+                        }
+                        else {
+                            return params.confirmationNumber;
+                        }
+                    }
+                }
+            },
             options: Object.assign({}, req.body, { sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false })
         })({
             action: new sskts.repository.Action(mongoose.connection),
