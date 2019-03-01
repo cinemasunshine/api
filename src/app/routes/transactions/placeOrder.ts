@@ -760,12 +760,12 @@ placeOrderTransactionsRouter.post(
                     order: {
                         orderDate: orderDate,
                         confirmationNumber: (params) => {
-                            const offer = params.acceptedOffers.shift();
+                            const firstOffer = params.acceptedOffers[0];
 
                             // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
-                            if (offer !== undefined
-                                && offer.itemOffered.typeOf === sskts.factory.reservationType.EventReservation) {
-                                return Number(offer.itemOffered.reservationNumber);
+                            if (firstOffer !== undefined
+                                && firstOffer.itemOffered.typeOf === sskts.factory.reservationType.EventReservation) {
+                                return Number(firstOffer.itemOffered.reservationNumber);
                             } else {
                                 return params.confirmationNumber;
                             }
