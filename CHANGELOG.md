@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Security
 
+## v13.0.0 - 2019-03-01
+
+### Changed
+
+- 座席予約承認アクションインターフェースをCinerino化
+- 承認アクションの目的インターフェースを最小化
+- 注文取引サービスを部分的にCinerino化
+- 取引インターフェースをCinerino化
+- install @motionpicture/sskts-domain@30.0.0
+
 ## v12.6.0 - 2019-02-26
 
 ### Added

@@ -7,6 +7,7 @@ import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
+import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as ioredis from 'ioredis';
 import * as moment from 'moment';
@@ -55,7 +56,7 @@ const rateLimit4transactionInProgress =
             next(new sskts.factory.errors.RateLimitExceeded(message));
         },
         // スコープ生成ロジックをカスタマイズ
-        scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
+        scopeGenerator: (req) => `placeOrderTransaction.${<string>req.params.transactionId}`
     });
 
 const placeOrderTransactionsRouter = Router();
@@ -80,22 +81,69 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
+            let passport: sskts.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
+            if (!WAITER_DISABLED) {
+                if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+                    throw new sskts.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+                }
+                if (process.env.WAITER_SECRET === undefined) {
+                    throw new sskts.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+                }
+                passport = {
+                    token: <string>req.body.passportToken,
+                    secret: process.env.WAITER_SECRET,
+                    issuer: process.env.WAITER_PASSPORT_ISSUER
+                };
+            }
+
+            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+            const seller = await sellerRepo.findById({ id: <string>req.body.sellerId });
+
             // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
-            const expires = (/^\d+$/.test(req.body.expires))
+            const expires = (/^\d+$/.test(<string>req.body.expires))
                 // tslint:disable-next-line:no-magic-numbers
-                ? moment.unix(parseInt(req.body.expires, 10)).toDate()
-                : moment(req.body.expires).toDate();
+                ? moment.unix(Number(<string>req.body.expires)).toDate()
+                : moment(<string>req.body.expires).toDate();
+
             const transaction = await sskts.service.transaction.placeOrderInProgress.start({
                 expires: expires,
-                customer: req.agent,
+                agent: {
+                    ...req.agent,
+                    identifier: [
+                        ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
+                        ...(req.body.agent !== undefined && req.body.agent.identifier !== undefined) ? req.body.agent.identifier : []
+                    ]
+                },
                 seller: {
                     typeOf: sskts.factory.organizationType.MovieTheater,
-                    id: req.body.sellerId
+                    id: <string>req.body.sellerId
                 },
-                clientUser: req.user,
-                passportToken: req.body.passportToken
+                object: {
+                    clientUser: req.user,
+                    passport: passport
+                },
+                passportValidator: (params: { passport: sskts.factory.waiter.passport.IPassport }) => {
+                    // tslint:disable-next-line:no-single-line-block-comment
+                    /* istanbul ignore next */
+                    if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
+                        throw new Error('WAITER_PASSPORT_ISSUER unset');
+                    }
+                    const issuers = process.env.WAITER_PASSPORT_ISSUER.split(',');
+                    const validIssuer = issuers.indexOf(params.passport.iss) >= 0;
+
+                    // スコープのフォーマットは、placeOrderTransaction.{sellerId}
+                    const explodedScopeStrings = params.passport.scope.split('.');
+                    const validScope = (
+                        // tslint:disable-next-line:no-magic-numbers
+                        explodedScopeStrings.length === 2 &&
+                        explodedScopeStrings[0] === 'placeOrderTransaction' && // スコープ接頭辞確認
+                        explodedScopeStrings[1] === seller.identifier // 販売者識別子確認
+                    );
+
+                    return validIssuer && validScope;
+                }
             })({
-                seller: new sskts.repository.Seller(mongoose.connection),
+                seller: sellerRepo,
                 transaction: new sskts.repository.Transaction(mongoose.connection)
             });
 
@@ -127,14 +175,29 @@ placeOrderTransactionsRouter.put(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            let formattedTelephone: string;
+            try {
+                const phoneUtil = PhoneNumberUtil.getInstance();
+                const phoneNumber = phoneUtil.parse(<string>req.body.telephone, 'JP'); // 日本の電話番号前提仕様
+                if (!phoneUtil.isValidNumber(phoneNumber)) {
+                    throw new sskts.factory.errors.Argument('contact.telephone', 'Invalid phone number format.');
+                }
+
+                formattedTelephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
+            } catch (error) {
+                throw new sskts.factory.errors.Argument('contact.telephone', error.message);
+            }
+
             const contact = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                contact: {
-                    familyName: req.body.familyName,
-                    givenName: req.body.givenName,
-                    email: req.body.email,
-                    telephone: req.body.telephone
+                id: <string>req.params.transactionId,
+                agent: { id: req.user.sub },
+                object: {
+                    customerContact: {
+                        familyName: <string>req.body.familyName,
+                        givenName: <string>req.body.givenName,
+                        email: <string>req.body.email,
+                        telephone: formattedTelephone
+                    }
                 }
             })({
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -161,10 +224,12 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                eventIdentifier: req.body.eventIdentifier,
-                offers: req.body.offers
+                object: {
+                    event: { id: <string>req.body.eventIdentifier },
+                    acceptedOffer: req.body.offers
+                },
+                agent: { id: req.user.sub },
+                transaction: { id: <string>req.params.transactionId }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -189,9 +254,9 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+                agent: { id: req.user.sub },
+                transaction: { id: <string>req.params.transactionId },
+                id: <string>req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -218,11 +283,13 @@ placeOrderTransactionsRouter.patch(
     async (req, res, next) => {
         try {
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId,
-                eventIdentifier: req.body.eventIdentifier,
-                offers: req.body.offers
+                object: {
+                    event: { id: <string>req.body.eventIdentifier },
+                    acceptedOffer: req.body.offers
+                },
+                agent: { id: req.user.sub },
+                transaction: { id: <string>req.params.transactionId },
+                id: <string>req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -351,8 +418,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
-            type ICreditCard4authorizeAction =
-                sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.ICreditCard4authorizeAction;
+            type ICreditCard4authorizeAction = sskts.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
             const creditCard: ICreditCard4authorizeAction = {
                 ...req.body.creditCard,
                 ...{
@@ -364,11 +430,12 @@ placeOrderTransactionsRouter.post(
             debug('authorizing credit card...', req.body.creditCard);
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
                 agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId },
+                transaction: { id: <string>req.params.transactionId },
                 object: {
                     typeOf: sskts.factory.paymentMethodType.CreditCard,
-                    orderId: req.body.orderId,
-                    amount: req.body.amount,
+                    additionalProperty: req.body.additionalProperty,
+                    orderId: <string>req.body.orderId,
+                    amount: Number(<string>req.body.amount),
                     method: req.body.method,
                     creditCard: creditCard
                 }
@@ -398,9 +465,9 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+                agent: { id: req.user.sub },
+                transaction: { id: <string>req.params.transactionId },
+                id: <string>req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -429,8 +496,8 @@ placeOrderTransactionsRouter.post(
             const authorizeObject = {
                 typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
                 // tslint:disable-next-line:no-magic-numbers
-                price: parseInt(req.body.price, 10),
-                transactionId: req.params.transactionId,
+                price: Number(req.body.price),
+                transactionId: <string>req.params.transactionId,
                 seatInfoSyncIn: {
                     kgygishCd: req.body.seatInfoSyncIn.kgygishCd,
                     yykDvcTyp: req.body.seatInfoSyncIn.yykDvcTyp,
@@ -448,7 +515,7 @@ placeOrderTransactionsRouter.post(
             };
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
                 agentId: req.user.sub,
-                transactionId: req.params.transactionId,
+                transactionId: <string>req.params.transactionId,
                 authorizeObject: authorizeObject
             })({
                 action: new sskts.repository.Action(mongoose.connection),
@@ -477,8 +544,8 @@ placeOrderTransactionsRouter.delete(
         try {
             await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
                 agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+                transactionId: <string>req.params.transactionId,
+                actionId: <string>req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection)
@@ -506,6 +573,24 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            const now = new Date();
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+
+            // 必要な会員プログラムに加入しているかどうか確認
+            const programMemberships = await ownershipInfoRepo.search<sskts.factory.programMembership.ProgramMembershipType>({
+                typeOfGood: {
+                    typeOf: 'ProgramMembership'
+                },
+                ownedBy: { id: req.user.sub },
+                ownedFrom: now,
+                ownedThrough: now
+            });
+            const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
+                .find((a) => a === sskts.factory.programMembership.Award.PecorinoPayment);
+            if (pecorinoPaymentAward === undefined) {
+                throw new sskts.factory.errors.Forbidden('Membership program requirements not satisfied');
+            }
+
             // pecorino転送取引サービスクライアントを生成
             const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
@@ -513,15 +598,16 @@ placeOrderTransactionsRouter.post(
             });
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
                 agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId },
+                transaction: { id: <string>req.params.transactionId },
                 object: {
                     typeOf: sskts.factory.paymentMethodType.Account,
                     amount: Number(req.body.amount),
+                    currency: sskts.factory.accountType.Point,
                     fromAccount: {
                         accountType: sskts.factory.accountType.Point,
-                        accountNumber: req.body.fromAccountNumber
+                        accountNumber: <string>req.body.fromAccountNumber
                     },
-                    notes: req.body.notes
+                    notes: <string>req.body.notes
                 }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
@@ -553,9 +639,9 @@ placeOrderTransactionsRouter.delete(
                 auth: pecorinoAuthClient
             });
             await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
-                id: req.params.actionId,
+                id: <string>req.params.actionId,
                 agent: { id: req.user.sub },
-                transaction: { id: req.params.transactionId }
+                transaction: { id: <string>req.params.transactionId }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -583,17 +669,36 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
+            const now = new Date();
+            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+
+            const programMemberships = await ownershipInfoRepo.search<sskts.factory.programMembership.ProgramMembershipType>({
+                typeOfGood: {
+                    typeOf: 'ProgramMembership'
+                },
+                ownedBy: { id: req.user.sub },
+                ownedFrom: now,
+                ownedThrough: now
+            });
+            const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
+                .find((a) => a === sskts.factory.programMembership.Award.PecorinoPayment);
+            if (pecorinoPaymentAward === undefined) {
+                throw new sskts.factory.errors.Forbidden('Membership program requirements not satisfied');
+            }
+
             // pecorino転送取引サービスクライアントを生成
             const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                amount: parseInt(req.body.amount, 10),
-                toAccountNumber: req.body.toAccountNumber,
-                notes: req.body.notes
+                agent: { id: req.user.sub },
+                transaction: { id: <string>req.params.transactionId },
+                object: {
+                    amount: Number(req.body.amount),
+                    toAccountNumber: <string>req.body.toAccountNumber,
+                    notes: <string>req.body.notes
+                }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -625,9 +730,9 @@ placeOrderTransactionsRouter.delete(
                 auth: pecorinoAuthClient
             });
             await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                actionId: req.params.actionId
+                agent: { id: req.user.sub },
+                transaction: { id: <string>req.params.transactionId },
+                id: <string>req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -649,10 +754,28 @@ placeOrderTransactionsRouter.post(
         try {
             const orderDate = new Date();
             const order = await sskts.service.transaction.placeOrderInProgress.confirm({
-                agentId: req.user.sub,
-                transactionId: req.params.transactionId,
-                sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false,
-                orderDate: orderDate
+                id: <string>req.params.transactionId,
+                agent: { id: req.user.sub },
+                result: {
+                    order: {
+                        orderDate: orderDate,
+                        confirmationNumber: (params) => {
+                            const firstOffer = params.acceptedOffers[0];
+
+                            // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
+                            if (firstOffer !== undefined
+                                && firstOffer.itemOffered.typeOf === sskts.factory.reservationType.EventReservation) {
+                                return Number(firstOffer.itemOffered.reservationNumber);
+                            } else {
+                                return params.confirmationNumber;
+                            }
+                        }
+                    }
+                },
+                options: {
+                    ...req.body,
+                    sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
+                }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
@@ -660,6 +783,13 @@ placeOrderTransactionsRouter.post(
                 seller: new sskts.repository.Seller(mongoose.connection)
             });
             debug('transaction confirmed', order);
+
+            // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
+            // tslint:disable-next-line:no-floating-promises
+            sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Confirmed)({
+                task: new sskts.repository.Task(mongoose.connection),
+                transaction: new sskts.repository.Transaction(mongoose.connection)
+            });
 
             res.status(CREATED).json(order);
         } catch (error) {
@@ -680,7 +810,7 @@ placeOrderTransactionsRouter.post(
             const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
             await transactionRepo.cancel({
                 typeOf: sskts.factory.transactionType.PlaceOrder,
-                id: req.params.transactionId
+                id: <string>req.params.transactionId
             });
             debug('transaction canceled.');
             res.status(NO_CONTENT).end();
@@ -697,7 +827,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const task = await sskts.service.transaction.placeOrder.sendEmail(
-                req.params.transactionId,
+                <string>req.params.transactionId,
                 {
                     typeOf: sskts.factory.creativeWorkType.EmailMessage,
                     sender: {
@@ -768,7 +898,7 @@ placeOrderTransactionsRouter.get(
             const actions = await actionRepo.searchByPurpose({
                 purpose: {
                     typeOf: sskts.factory.transactionType.PlaceOrder,
-                    id: req.params.transactionId
+                    id: <string>req.params.transactionId
                 },
                 sort: req.query.sort
             });
