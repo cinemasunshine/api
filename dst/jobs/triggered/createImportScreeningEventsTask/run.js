@@ -16,6 +16,7 @@ const cron_1 = require("cron");
 const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
+const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('sskts-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
@@ -24,9 +25,19 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     // tslint:disable-next-line:no-magic-numbers
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
+let holdSingletonProcess = false;
+setInterval(() => __awaiter(this, void 0, void 0, function* () {
+    // tslint:disable-next-line:no-magic-numbers
+    holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+}), 
+// tslint:disable-next-line:no-magic-numbers
+10000);
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob('*/30 * * * *', () => __awaiter(this, void 0, void 0, function* () {
+        if (!holdSingletonProcess) {
+            return;
+        }
         const now = new Date();
         const placeRepo = new sskts.repository.Place(connection);
         const sellerRepo = new sskts.repository.Seller(connection);

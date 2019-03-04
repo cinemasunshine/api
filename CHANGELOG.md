@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- シングルトンプロセス管理を導入
+
 ### Changed
 
 - インメモリオファーリポジトリを導入

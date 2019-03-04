@@ -7,6 +7,7 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 
 import { connectMongo } from '../../../connectMongo';
+import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('sskts-api:jobs');
 
@@ -18,12 +19,26 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
 
+let holdSingletonProcess = false;
+setInterval(
+    async () => {
+        // tslint:disable-next-line:no-magic-numbers
+        holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+    },
+    // tslint:disable-next-line:no-magic-numbers
+    10000
+);
+
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(
         '*/30 * * * *',
         async () => {
+            if (!holdSingletonProcess) {
+                return;
+            }
+
             const now = new Date();
 
             const placeRepo = new sskts.repository.Place(connection);
