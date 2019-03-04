@@ -17,7 +17,15 @@ const cron_1 = require("cron");
 const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
+const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('sskts-api:jobs');
+let holdSingletonProcess = false;
+setInterval(() => __awaiter(this, void 0, void 0, function* () {
+    // tslint:disable-next-line:no-magic-numbers
+    holdSingletonProcess = yield singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
+}), 
+// tslint:disable-next-line:no-magic-numbers
+10000);
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -35,6 +43,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         tls: (process.env.REDIS_TLS_SERVERNAME !== undefined) ? { servername: process.env.REDIS_TLS_SERVERNAME } : undefined
     });
     const job = new cron_1.CronJob('* * * * *', () => __awaiter(this, void 0, void 0, function* () {
+        if (!holdSingletonProcess) {
+            return;
+        }
         const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redisClient);
         const sellerRepo = new sskts.repository.Seller(connection);
         // 販売者ごとにイベント在庫状況を更新

@@ -6,8 +6,19 @@ import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
+import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('sskts-api:jobs');
+
+let holdSingletonProcess = false;
+setInterval(
+    async () => {
+        // tslint:disable-next-line:no-magic-numbers
+        holdSingletonProcess = await singletonProcess.lock({ key: 'importMovies', ttl: 60 });
+    },
+    // tslint:disable-next-line:no-magic-numbers
+    10000
+);
 
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
@@ -15,6 +26,10 @@ export default async () => {
     const job = new CronJob(
         '10 * * * *',
         async () => {
+            if (!holdSingletonProcess) {
+                return;
+            }
+
             const creativeWorkRepo = new sskts.repository.CreativeWork(connection);
             const sellerRepo = new sskts.repository.Seller(connection);
 

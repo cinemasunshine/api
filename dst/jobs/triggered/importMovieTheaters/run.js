@@ -15,10 +15,21 @@ const sskts = require("@motionpicture/sskts-domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
+const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('sskts-api:jobs');
+let holdSingletonProcess = false;
+setInterval(() => __awaiter(this, void 0, void 0, function* () {
+    // tslint:disable-next-line:no-magic-numbers
+    holdSingletonProcess = yield singletonProcess.lock({ key: 'importMovieTheaters', ttl: 60 });
+}), 
+// tslint:disable-next-line:no-magic-numbers
+10000);
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob('*/10 * * * *', () => __awaiter(this, void 0, void 0, function* () {
+        if (!holdSingletonProcess) {
+            return;
+        }
         const sellerRepo = new sskts.repository.Seller(connection);
         const placeRepo = new sskts.repository.Place(connection);
         // 全劇場組織を取得

@@ -8,8 +8,19 @@ import * as createDebug from 'debug';
 import * as moment from 'moment';
 
 import { connectMongo } from '../../../connectMongo';
+import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('sskts-api:jobs');
+
+let holdSingletonProcess = false;
+setInterval(
+    async () => {
+        // tslint:disable-next-line:no-magic-numbers
+        holdSingletonProcess = await singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
+    },
+    // tslint:disable-next-line:no-magic-numbers
+    10000
+);
 
 /**
  * 上映イベントを何週間後までインポートするか
@@ -33,6 +44,10 @@ export default async () => {
     const job = new CronJob(
         '* * * * *',
         async () => {
+            if (!holdSingletonProcess) {
+                return;
+            }
+
             const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redisClient);
             const sellerRepo = new sskts.repository.Seller(connection);
 
