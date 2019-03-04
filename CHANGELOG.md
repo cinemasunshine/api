@@ -8,11 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
-- シングルトンプロセス管理を導入
-
 ### Changed
-
-- インメモリオファーリポジトリを導入
 
 ### Deprecated
 
@@ -21,6 +17,16 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Fixed
 
 ### Security
+
+## v13.0.1 - 2019-03-04
+
+### Added
+
+- シングルトンプロセス管理を導入
+
+### Changed
+
+- インメモリオファーリポジトリを導入
 
 ## v13.0.0 - 2019-03-01
 
