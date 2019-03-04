@@ -20,7 +20,7 @@ const debug = createDebug('sskts-api:jobs');
 let holdSingletonProcess = false;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
-    holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+    holdSingletonProcess = yield singletonProcess.lock({ key: 'importMovies', ttl: 60 });
 }), 
 // tslint:disable-next-line:no-magic-numbers
 10000);

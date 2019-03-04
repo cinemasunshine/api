@@ -14,7 +14,7 @@ let holdSingletonProcess = false;
 setInterval(
     async () => {
         // tslint:disable-next-line:no-magic-numbers
-        holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+        holdSingletonProcess = await singletonProcess.lock({ key: 'importMovies', ttl: 60 });
     },
     // tslint:disable-next-line:no-magic-numbers
     10000
