@@ -59,6 +59,54 @@ const rateLimit4transactionInProgress =
         scopeGenerator: (req) => `placeOrderTransaction.${<string>req.params.transactionId}`
     });
 
+export interface ICOATicket extends sskts.COA.services.master.ITicketResult {
+    theaterCode: string;
+}
+
+let coaTickets: ICOATicket[];
+
+function initializeCOATickets() {
+    return async (repos: { place: sskts.repository.Place }) => {
+        try {
+            const tickets: ICOATicket[] = [];
+            const movieTheaters = await repos.place.searchMovieTheaters({});
+            await Promise.all(movieTheaters.map(async (movieTheater) => {
+                const ticketResults = await sskts.COA.services.master.ticket({ theaterCode: movieTheater.branchCode });
+                debug(movieTheater.branchCode, ticketResults.length, 'COA Tickets found');
+                tickets.push(...ticketResults.map((t) => {
+                    return { ...t, theaterCode: movieTheater.branchCode };
+                }));
+            }));
+
+            coaTickets = tickets;
+        } catch (error) {
+            // no op
+        }
+    };
+}
+
+const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
+if (USE_IN_MEMORY_OFFER_REPO) {
+    initializeCOATickets()({ place: new sskts.repository.Place(mongoose.connection) })
+        .then()
+        // tslint:disable-next-line:no-console
+        .catch(console.error);
+
+    const HOUR = 3600000;
+    setInterval(
+        async () => {
+            try {
+                await initializeCOATickets()({ place: new sskts.repository.Place(mongoose.connection) });
+            } catch (error) {
+                // tslint:disable-next-line:no-console
+                console.error(error);
+            }
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        HOUR
+    );
+}
+
 const placeOrderTransactionsRouter = Router();
 placeOrderTransactionsRouter.use(authentication);
 
@@ -216,9 +264,6 @@ placeOrderTransactionsRouter.put(
 placeOrderTransactionsRouter.post(
     '/:transactionId/actions/authorize/seatReservation',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -232,8 +277,9 @@ placeOrderTransactionsRouter.post(
                 transaction: { id: <string>req.params.transactionId }
             })({
                 action: new sskts.repository.Action(mongoose.connection),
+                event: new sskts.repository.Event(mongoose.connection),
                 transaction: new sskts.repository.Transaction(mongoose.connection),
-                event: new sskts.repository.Event(mongoose.connection)
+                offer: (coaTickets !== undefined) ? new sskts.repository.Offer(coaTickets) : undefined
             });
 
             res.status(CREATED).json(action);
@@ -275,9 +321,6 @@ placeOrderTransactionsRouter.delete(
 placeOrderTransactionsRouter.patch(
     '/:transactionId/actions/authorize/seatReservation/:actionId',
     permitScopes(['aws.cognito.signin.user.admin', 'transactions']),
-    (__1, __2, next) => {
-        next();
-    },
     validator,
     rateLimit4transactionInProgress,
     async (req, res, next) => {
@@ -292,8 +335,9 @@ placeOrderTransactionsRouter.patch(
                 id: <string>req.params.actionId
             })({
                 action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
-                event: new sskts.repository.Event(mongoose.connection)
+                event: new sskts.repository.Event(mongoose.connection),
+                offer: (coaTickets !== undefined) ? new sskts.repository.Offer(coaTickets) : undefined,
+                transaction: new sskts.repository.Transaction(mongoose.connection)
             });
 
             res.json(action);

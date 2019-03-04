@@ -74,6 +74,7 @@ npm start
 | `TELEMETRY_API_ENDPOINT`                             | true                  |             | CinerinoTelemetryエンドポイント            |
 | `DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN`                 | true                  |             | 開発者LINE通知アクセストークン             |
 | `LINE_NOTIFY_URL`                                    | true                  |             | https://notify-api.line.me/api/notify      |
+| `USE_IN_MEMORY_OFFER_REPO`                           | false                 |             | インメモリオファーリポジトリ使用フラグ     |
 
 ## tslint
 

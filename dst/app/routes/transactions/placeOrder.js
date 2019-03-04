@@ -62,6 +62,45 @@ const rateLimit4transactionInProgress = middlewares.rateLimit({
     // スコープ生成ロジックをカスタマイズ
     scopeGenerator: (req) => `placeOrderTransaction.${req.params.transactionId}`
 });
+let coaTickets;
+function initializeCOATickets() {
+    return (repos) => __awaiter(this, void 0, void 0, function* () {
+        try {
+            const tickets = [];
+            const movieTheaters = yield repos.place.searchMovieTheaters({});
+            yield Promise.all(movieTheaters.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
+                const ticketResults = yield sskts.COA.services.master.ticket({ theaterCode: movieTheater.branchCode });
+                debug(movieTheater.branchCode, ticketResults.length, 'COA Tickets found');
+                tickets.push(...ticketResults.map((t) => {
+                    return Object.assign({}, t, { theaterCode: movieTheater.branchCode });
+                }));
+            })));
+            coaTickets = tickets;
+        }
+        catch (error) {
+            // no op
+        }
+    });
+}
+const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
+if (USE_IN_MEMORY_OFFER_REPO) {
+    initializeCOATickets()({ place: new sskts.repository.Place(mongoose.connection) })
+        .then()
+        // tslint:disable-next-line:no-console
+        .catch(console.error);
+    const HOUR = 3600000;
+    setInterval(() => __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield initializeCOATickets()({ place: new sskts.repository.Place(mongoose.connection) });
+        }
+        catch (error) {
+            // tslint:disable-next-line:no-console
+            console.error(error);
+        }
+    }), 
+    // tslint:disable-next-line:no-magic-numbers
+    HOUR);
+}
 const placeOrderTransactionsRouter = express_1.Router();
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
@@ -188,9 +227,7 @@ placeOrderTransactionsRouter.put('/:transactionId/customerContact', permitScopes
 /**
  * 座席仮予約
  */
-placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReservation', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
             object: {
@@ -201,8 +238,9 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/seatReserva
             transaction: { id: req.params.transactionId }
         })({
             action: new sskts.repository.Action(mongoose.connection),
+            event: new sskts.repository.Event(mongoose.connection),
             transaction: new sskts.repository.Transaction(mongoose.connection),
-            event: new sskts.repository.Event(mongoose.connection)
+            offer: (coaTickets !== undefined) ? new sskts.repository.Offer(coaTickets) : undefined
         });
         res.status(http_status_1.CREATED).json(action);
     }
@@ -232,9 +270,7 @@ placeOrderTransactionsRouter.delete('/:transactionId/actions/authorize/seatReser
 /**
  * 座席仮予へ変更(券種変更)
  */
-placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (__1, __2, next) => {
-    next();
-}, validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReservation/:actionId', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), validator_1.default, rateLimit4transactionInProgress, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const action = yield sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers({
             object: {
@@ -246,8 +282,9 @@ placeOrderTransactionsRouter.patch('/:transactionId/actions/authorize/seatReserv
             id: req.params.actionId
         })({
             action: new sskts.repository.Action(mongoose.connection),
-            transaction: new sskts.repository.Transaction(mongoose.connection),
-            event: new sskts.repository.Event(mongoose.connection)
+            event: new sskts.repository.Event(mongoose.connection),
+            offer: (coaTickets !== undefined) ? new sskts.repository.Offer(coaTickets) : undefined,
+            transaction: new sskts.repository.Transaction(mongoose.connection)
         });
         res.json(action);
     }
