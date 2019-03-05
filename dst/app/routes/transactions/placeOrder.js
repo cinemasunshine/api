@@ -101,6 +101,10 @@ if (USE_IN_MEMORY_OFFER_REPO) {
     // tslint:disable-next-line:no-magic-numbers
     HOUR);
 }
+/**
+ * ポイントインセンティブ名
+ */
+const POINT_AWARD = 'PecorinoPayment';
 const placeOrderTransactionsRouter = express_1.Router();
 placeOrderTransactionsRouter.use(authentication_1.default);
 placeOrderTransactionsRouter.post('/start', permitScopes_1.default(['aws.cognito.signin.user.admin', 'transactions']), (req, _, next) => {
@@ -513,7 +517,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/paymentMeth
             ownedThrough: now
         });
         const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
-            .find((a) => a === sskts.factory.programMembership.Award.PecorinoPayment);
+            .find((a) => a === POINT_AWARD);
         if (pecorinoPaymentAward === undefined) {
             throw new sskts.factory.errors.Forbidden('Membership program requirements not satisfied');
         }
@@ -593,7 +597,7 @@ placeOrderTransactionsRouter.post('/:transactionId/actions/authorize/award/pecor
             ownedThrough: now
         });
         const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
-            .find((a) => a === sskts.factory.programMembership.Award.PecorinoPayment);
+            .find((a) => a === POINT_AWARD);
         if (pecorinoPaymentAward === undefined) {
             throw new sskts.factory.errors.Forbidden('Membership program requirements not satisfied');
         }
@@ -661,7 +665,7 @@ placeOrderTransactionsRouter.post('/:transactionId/confirm', permitScopes_1.defa
                         const firstOffer = params.acceptedOffers[0];
                         // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
                         if (firstOffer !== undefined
-                            && firstOffer.itemOffered.typeOf === sskts.factory.reservationType.EventReservation) {
+                            && firstOffer.itemOffered.typeOf === sskts.factory.chevre.reservationType.EventReservation) {
                             return Number(firstOffer.itemOffered.reservationNumber);
                         }
                         else {
