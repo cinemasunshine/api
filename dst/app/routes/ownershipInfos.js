@@ -28,13 +28,31 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
         const fromDate = req.query.fromDate;
         const toDate = req.query.toDate;
         const theaterIds = req.query.theaterIds;
-        const searchCondition = {
+        const searchConditions = {
             createdAtFrom: new Date(fromDate),
             createdAtTo: new Date(toDate),
             theaterIds: theaterIds
         };
         const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
-        const count = yield repository.countProgramMembership(searchCondition);
+        const andConditions = [
+            { 'typeOfGood.typeOf': 'ProgramMembership' }
+        ];
+        andConditions.push({
+            createdAt: {
+                $lte: searchConditions.createdAtTo,
+                $gte: searchConditions.createdAtFrom
+            }
+        });
+        if (Array.isArray(searchConditions.theaterIds)) {
+            andConditions.push({
+                'acquiredFrom.id': {
+                    $exists: true,
+                    $in: searchConditions.theaterIds
+                }
+            });
+        }
+        const count = yield repository.ownershipInfoModel.countDocuments({ $and: andConditions })
+            .exec();
         return res.json({ count });
     }
     catch (error) {

@@ -10,9 +10,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- repositoryを完全にCinerino化
+
 ### Deprecated
 
 ### Removed
+
+- 作品インポートタスクを停止
 
 ### Fixed
 

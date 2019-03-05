@@ -41,9 +41,9 @@ const run_27 = require("./continuous/sendOrder/run");
 const run_28 = require("./continuous/triggerWebhook/run");
 const run_29 = require("./continuous/unRegisterProgramMembership/run");
 const run_30 = require("./triggered/createImportScreeningEventsTask/run");
-const run_31 = require("./triggered/importMovies/run");
-const run_32 = require("./triggered/importMovieTheaters/run");
-const run_33 = require("./triggered/updateScreeningEventAvailability/run");
+// import importMovies from './triggered/importMovies/run';
+const run_31 = require("./triggered/importMovieTheaters/run");
+const run_32 = require("./triggered/updateScreeningEventAvailability/run");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     yield run_1.default();
     yield run_2.default();
@@ -75,7 +75,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     yield run_28.default();
     yield run_29.default();
     yield run_30.default();
+    // await importMovies();
     yield run_31.default();
     yield run_32.default();
-    yield run_33.default();
 });
