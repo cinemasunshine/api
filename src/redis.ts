@@ -3,15 +3,15 @@
 /**
  * redis cacheクライアント
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 
-const debug = createDebug('sskts-api:redis');
+const debug = createDebug('cinerino-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
 const PING_INTERVAL = 60000; // 60 seconds
 
-let client: sskts.redis.RedisClient | undefined;
+let client: cinerino.redis.RedisClient | undefined;
 
 /**
  * AzureRedisは10分間アイドル状態だとタイムアウトしてコネクションが切断される
@@ -31,7 +31,7 @@ setInterval(
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 function createClient() {
-    const c = sskts.redis.createClient({
+    const c = cinerino.redis.createClient({
         host: <string>process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(<string>process.env.REDIS_PORT, 10),
@@ -105,7 +105,7 @@ function resetClient() {
     client = undefined;
 }
 
-export function getClient(): sskts.redis.RedisClient {
+export function getClient(): cinerino.redis.RedisClient {
     if (client === undefined) {
         client = createClient();
     }

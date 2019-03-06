@@ -1,7 +1,7 @@
 /**
  * イベントルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { query } from 'express-validator/check';
@@ -24,9 +24,9 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-                event: new sskts.repository.Event(mongoose.connection),
-                itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
+            await cinerino.service.offer.findScreeningEventById4cinemasunshine(<string>req.params.id)({
+                event: new cinerino.repository.Event(mongoose.connection),
+                itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
             }).then((event) => {
                 res.json(event);
             });
@@ -50,17 +50,17 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new sskts.repository.Event(mongoose.connection);
-            const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
+            const eventRepo = new cinerino.repository.Event(mongoose.connection);
+            const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
-            const searchConditions: sskts.factory.event.screeningEvent.ISearchConditions = {
+            const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined,
-                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending }
+                sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending }
             };
-            const events = await sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
+            const events = await cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });
@@ -80,9 +80,9 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-                event: new sskts.repository.Event(mongoose.connection),
-                itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
+            await cinerino.service.offer.findScreeningEventById4cinemasunshine(<string>req.params.id)({
+                event: new cinerino.repository.Event(mongoose.connection),
+                itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
             }).then((event) => {
                 res.json(event);
             });
@@ -103,16 +103,16 @@ eventsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const eventRepo = new sskts.repository.Event(mongoose.connection);
-            const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
+            const eventRepo = new cinerino.repository.Event(mongoose.connection);
+            const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
 
-            const searchConditions: sskts.factory.event.screeningEvent.ISearchConditions = {
+            const searchConditions: cinerino.factory.event.screeningEvent.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined
             };
-            const events = await sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
+            const events = await cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
                 event: eventRepo,
                 itemAvailability: itemAvailabilityRepo
             });

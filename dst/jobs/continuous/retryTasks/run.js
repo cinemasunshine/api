@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * タスクリトライ
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
@@ -19,14 +19,14 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
     const RETRY_INTERVAL_MINUTES = 10;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
         }
         count += 1;
         try {
-            yield sskts.service.task.retry(RETRY_INTERVAL_MINUTES)({ task: taskRepo });
+            yield cinerino.service.task.retry(RETRY_INTERVAL_MINUTES)({ task: taskRepo });
         }
         catch (error) {
             // tslint:disable-next-line:no-console

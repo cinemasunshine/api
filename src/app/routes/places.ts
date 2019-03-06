@@ -4,7 +4,7 @@
 import { Router } from 'express';
 const placesRouter = Router();
 
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as mongoose from 'mongoose';
 
 import authentication from '../middlewares/authentication';
@@ -19,7 +19,7 @@ placesRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const repository = new sskts.repository.Place(mongoose.connection);
+            const repository = new cinerino.repository.Place(mongoose.connection);
             await repository.findMovieTheaterByBranchCode(req.params.branchCode).then((theater) => {
                 res.json(theater);
             });
@@ -34,7 +34,7 @@ placesRouter.get(
     validator,
     async (__, res, next) => {
         try {
-            const repository = new sskts.repository.Place(mongoose.connection);
+            const repository = new cinerino.repository.Place(mongoose.connection);
             await repository.searchMovieTheaters({}).then((places) => {
                 res.json(places);
             });

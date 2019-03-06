@@ -2,7 +2,7 @@
  * パフォーマンス空席状況を更新する
  * COA空席情報から空席状況を生成してredisに保管する
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -10,7 +10,7 @@ import * as moment from 'moment';
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 
 let holdSingletonProcess = false;
 setInterval(
@@ -33,7 +33,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
-    const redisClient = sskts.redis.createClient({
+    const redisClient = cinerino.redis.createClient({
         host: <string>process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(<string>process.env.REDIS_PORT, 10),
@@ -48,8 +48,8 @@ export default async () => {
                 return;
             }
 
-            const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redisClient);
-            const sellerRepo = new sskts.repository.Seller(connection);
+            const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redisClient);
+            const sellerRepo = new cinerino.repository.Seller(connection);
 
             // 販売者ごとにイベント在庫状況を更新
             const sellers = await sellerRepo.search({});
@@ -61,7 +61,7 @@ export default async () => {
             await Promise.all(sellers.map(async (seller) => {
                 try {
                     if (seller.location !== undefined && seller.location.branchCode !== undefined) {
-                        await sskts.service.itemAvailability.updateIndividualScreeningEvents(
+                        await cinerino.service.offer.updateScreeningEventItemAvailability(
                             seller.location.branchCode,
                             startFrom,
                             startThrough

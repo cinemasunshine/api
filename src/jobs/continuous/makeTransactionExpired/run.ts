@@ -1,12 +1,12 @@
 /**
  * 取引期限監視
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
 
-const debug = createDebug('sskts-api');
+const debug = createDebug('cinerino-api');
 
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
@@ -15,7 +15,7 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
-    const transactionRepo = new sskts.repository.Transaction(connection);
+    const transactionRepo = new cinerino.repository.Transaction(connection);
 
     setInterval(
         async () => {

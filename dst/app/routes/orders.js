@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文ルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const google_libphonenumber_1 = require("google-libphonenumber");
 const mongoose = require("mongoose");
@@ -33,7 +33,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
         const phoneUtil = google_libphonenumber_1.PhoneNumberUtil.getInstance();
         const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
         if (!phoneUtil.isValidNumber(phoneNumber)) {
-            next(new sskts.factory.errors.Argument('telephone', 'Invalid phone number format'));
+            next(new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format'));
             return;
         }
         const key = {
@@ -41,7 +41,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
             reservationNumber: req.body.confirmationNumber,
             telephone: phoneUtil.format(phoneNumber, google_libphonenumber_1.PhoneNumberFormat.E164)
         };
-        const repository = new sskts.repository.Order(mongoose.connection);
+        const repository = new cinerino.repository.Order(mongoose.connection);
         const order = yield repository.findByLocationBranchCodeAndReservationNumber(key);
         res.json(order);
     }
@@ -54,7 +54,7 @@ ordersRouter.post('/findByOrderInquiryKey', permitScopes_1.default(['aws.cognito
  */
 ordersRouter.get('/:orderNumber/actions', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
         const actions = yield actionRepo.searchByOrderNumber({
             orderNumber: req.params.orderNumber,
             sort: req.query.sort
@@ -102,7 +102,7 @@ ordersRouter.get('', permitScopes_1.default(['admin']), (req, __2, next) => {
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const orderRepo = new sskts.repository.Order(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });

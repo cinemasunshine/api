@@ -11,13 +11,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 上映イベントインポートタスク作成
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -39,9 +39,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
             return;
         }
         const now = new Date();
-        const placeRepo = new sskts.repository.Place(connection);
-        const sellerRepo = new sskts.repository.Seller(connection);
-        const taskRepo = new sskts.repository.Task(connection);
+        const placeRepo = new cinerino.repository.Place(connection);
+        const sellerRepo = new cinerino.repository.Seller(connection);
+        const taskRepo = new cinerino.repository.Task(connection);
         // 全劇場組織を取得
         const sellers = yield sellerRepo.search({});
         const movieTheaters = yield placeRepo.searchMovieTheaters({});
@@ -61,8 +61,8 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                         .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
                         .toDate();
                     const taskAttributes = {
-                        name: sskts.factory.taskName.ImportScreeningEvents,
-                        status: sskts.factory.taskStatus.Ready,
+                        name: cinerino.factory.taskName.ImportScreeningEvents,
+                        status: cinerino.factory.taskStatus.Ready,
                         runsAt: now,
                         remainingNumberOfTries: 1,
                         numberOfTried: 0,

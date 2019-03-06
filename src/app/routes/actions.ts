@@ -1,7 +1,7 @@
 /**
  * アクションルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED } from 'http-status';
 import * as mongoose from 'mongoose';
@@ -26,7 +26,7 @@ actionsRouter.post(
                 ticketToken: req.body.ticketToken
             };
 
-            const action = await new sskts.repository.Action(mongoose.connection).printTicket(
+            const action = await new cinerino.repository.Action(mongoose.connection).printTicket(
                 req.user.sub,
                 ticket
             );
@@ -46,7 +46,7 @@ actionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actions = await new sskts.repository.Action(mongoose.connection).searchPrintTicket({
+            const actions = await new cinerino.repository.Action(mongoose.connection).searchPrintTicket({
                 agentId: req.user.sub,
                 ticketToken: req.query.ticketToken
             });

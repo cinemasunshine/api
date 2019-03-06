@@ -13,7 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const createDebug = require("debug");
 const redis = require("./redis");
-const debug = createDebug('sskts-api:singletonProcess');
+const debug = createDebug('cinerino-api:singletonProcess');
 /**
  * Signletonプロセスをロックする
  */

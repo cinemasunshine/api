@@ -1,12 +1,13 @@
+// tslint:disable:no-useless-files
 /**
  * 映画作品インポート
  */
-// import * as sskts from '@motionpicture/sskts-domain';
+// import * as cinerino from '@cinerino/domain';
 // import { CronJob } from 'cron';
 // import * as createDebug from 'debug';
 // import { connectMongo } from '../../../connectMongo';
 // import * as singletonProcess from '../../../singletonProcess';
-// const debug = createDebug('sskts-api:jobs');
+// const debug = createDebug('cinerino-api:jobs');
 // let holdSingletonProcess = false;
 // setInterval(
 //     async () => {
@@ -24,8 +25,8 @@
 //             if (!holdSingletonProcess) {
 //                 return;
 //             }
-//             const creativeWorkRepo = new sskts.repository.CreativeWork(connection);
-//             const sellerRepo = new sskts.repository.Seller(connection);
+//             const creativeWorkRepo = new cinerino.repository.CreativeWork(connection);
+//             const sellerRepo = new cinerino.repository.Seller(connection);
 //             // 全劇場組織を取得
 //             const sellers = await sellerRepo.search({});
 //             // 劇場ごとに映画作品をインポート
@@ -34,7 +35,7 @@
 //                     try {
 //                         const branchCode = seller.location.branchCode;
 //                         debug('importing movies...', branchCode);
-//                         await sskts.service.masterSync.importMovies(branchCode)({ creativeWork: creativeWorkRepo });
+//                         await cinerino.service.masterSync.importMovies(branchCode)({ creativeWork: creativeWorkRepo });
 //                         debug('movies imported', branchCode);
 //                     } catch (error) {
 //                         // tslint:disable-next-line:no-console

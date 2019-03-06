@@ -11,16 +11,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 取引タスクエクスポートが実行中のままになっている取引を監視する
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('sskts-api');
+const debug = createDebug('cinerino-api');
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let countRetry = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 500;
-    const transactionRepo = new sskts.repository.Transaction(connection);
+    const transactionRepo = new cinerino.repository.Transaction(connection);
     const RETRY_INTERVAL_MINUTES = 10;
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (countRetry > MAX_NUBMER_OF_PARALLEL_TASKS) {

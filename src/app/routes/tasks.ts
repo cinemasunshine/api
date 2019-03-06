@@ -1,7 +1,7 @@
 /**
  * タスクルーター
  */
-import * as cinerino from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';

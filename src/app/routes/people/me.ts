@@ -1,7 +1,7 @@
 /**
  * me(今ログイン中のユーザー)ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
@@ -22,16 +22,16 @@ import * as redis from '../../../redis';
 
 const meRouter = Router();
 
-const debug = createDebug('sskts-api:routes:people:me');
-const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
+const debug = createDebug('cinerino-api:routes:people:me');
+const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
-    credentials: new sskts.AWS.Credentials({
+    credentials: new cinerino.AWS.Credentials({
         accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
     })
 });
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
@@ -55,7 +55,7 @@ meRouter.get(
     permitScopes(['aws.cognito.signin.user.admin', 'people.contacts', 'people.contacts.read-only']),
     async (req, res, next) => {
         try {
-            const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
             const contact = await personRepo.getUserAttributesByAccessToken(req.accessToken);
 
             // format a phone number to a Japanese style
@@ -91,12 +91,12 @@ meRouter.put(
 
                 formatedPhoneNumber = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
             } catch (error) {
-                next(new sskts.factory.errors.Argument('telephone', 'invalid phone number format'));
+                next(new cinerino.factory.errors.Argument('telephone', 'invalid phone number format'));
 
                 return;
             }
 
-            const personRepo = new sskts.repository.Person(cognitoIdentityServiceProvider);
+            const personRepo = new cinerino.repository.Person(cognitoIdentityServiceProvider);
             await personRepo.updateProfileByAccessToken({
                 accessToken: req.accessToken,
                 profile: {
@@ -121,7 +121,7 @@ meRouter.get(
     permitScopes(['aws.cognito.signin.user.admin', 'people.creditCards', 'people.creditCards.read-only']),
     async (req, res, next) => {
         try {
-            const searchCardResults = await sskts.service.person.creditCard.find(<string>req.user.username)();
+            const searchCardResults = await cinerino.service.person.creditCard.find(<string>req.user.username)();
             debug('searchCardResults:', searchCardResults);
             res.json(searchCardResults);
         } catch (error) {
@@ -143,7 +143,7 @@ meRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const creditCard = await sskts.service.person.creditCard.save(<string>req.user.username, req.body)();
+            const creditCard = await cinerino.service.person.creditCard.save(<string>req.user.username, req.body)();
             res.status(CREATED).json(creditCard);
         } catch (error) {
             next(error);
@@ -161,7 +161,7 @@ meRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.person.creditCard.unsubscribe(<string>req.user.username, req.params.cardSeq)();
+            await cinerino.service.person.creditCard.unsubscribe(<string>req.user.username, req.params.cardSeq)();
             res.status(NO_CONTENT).end();
         } catch (error) {
             next(error);
@@ -183,28 +183,29 @@ meRouter.post(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const accountNumberRepo = new sskts.repository.AccountNumber(redis.getClient());
-            const accountService = new sskts.pecorinoapi.service.Account({
+            const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
+            const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const account = await sskts.service.account.open({
-                name: req.body.name
+            const account = await cinerino.service.account.openWithoutOwnershipInfo({
+                name: req.body.name,
+                accountType: cinerino.factory.accountType.Point
             })({
                 accountNumber: accountNumberRepo,
                 accountService: accountService
             });
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             // tslint:disable-next-line:max-line-length
-            const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.ownershipInfo.IGood<sskts.factory.ownershipInfo.AccountGoodType.Account>>
+            const ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>
                 = {
                 id: '',
                 typeOf: 'OwnershipInfo',
                 // 十分にユニーク
-                identifier: `${sskts.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
+                identifier: `${cinerino.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
-                    accountType: sskts.factory.accountType.Point,
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: cinerino.factory.accountType.Point,
                     accountNumber: account.accountNumber
                 },
                 ownedBy: req.agent,
@@ -231,11 +232,11 @@ meRouter.put(
     async (req, res, next) => {
         try {
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
-                    accountType: sskts.factory.accountType.Point
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: cinerino.factory.accountType.Point
                 },
                 ownedBy: {
                     id: req.user.sub
@@ -243,15 +244,15 @@ meRouter.put(
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
-                throw new sskts.factory.errors.NotFound('Account');
+                throw new cinerino.factory.errors.NotFound('Account');
             }
 
-            const accountService = new sskts.pecorinoapi.service.Account({
+            const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             await accountService.close({
-                accountType: sskts.factory.accountType.Point,
+                accountType: cinerino.factory.accountType.Point,
                 accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
             });
             res.status(NO_CONTENT).end();
@@ -262,22 +263,22 @@ meRouter.put(
                 const message = `${error.name}:${error.message}`;
                 switch (error.code) {
                     case BAD_REQUEST: // 400
-                        error = new sskts.factory.errors.Argument('accountNumber', message);
+                        error = new cinerino.factory.errors.Argument('accountNumber', message);
                         break;
                     case UNAUTHORIZED: // 401
-                        error = new sskts.factory.errors.Unauthorized(message);
+                        error = new cinerino.factory.errors.Unauthorized(message);
                         break;
                     case FORBIDDEN: // 403
-                        error = new sskts.factory.errors.Forbidden(message);
+                        error = new cinerino.factory.errors.Forbidden(message);
                         break;
                     case NOT_FOUND: // 404
-                        error = new sskts.factory.errors.NotFound(message);
+                        error = new cinerino.factory.errors.NotFound(message);
                         break;
                     case TOO_MANY_REQUESTS: // 429
-                        error = new sskts.factory.errors.RateLimitExceeded(message);
+                        error = new cinerino.factory.errors.RateLimitExceeded(message);
                         break;
                     default:
-                        error = new sskts.factory.errors.ServiceUnavailable(message);
+                        error = new cinerino.factory.errors.ServiceUnavailable(message);
                 }
             }
 
@@ -297,11 +298,11 @@ meRouter.delete(
         try {
             const now = new Date();
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
-                    accountType: sskts.factory.accountType.Point
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: cinerino.factory.accountType.Point
                 },
                 ownedBy: {
                     id: req.user.sub
@@ -311,7 +312,7 @@ meRouter.delete(
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
-                throw new sskts.factory.errors.NotFound('Account');
+                throw new cinerino.factory.errors.NotFound('Account');
             }
 
             // 所有期限を更新
@@ -338,11 +339,11 @@ meRouter.get(
             const now = new Date();
 
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
-                    accountType: sskts.factory.accountType.Point
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: cinerino.factory.accountType.Point
                 },
                 ownedBy: {
                     id: req.user.sub
@@ -350,15 +351,15 @@ meRouter.get(
                 ownedFrom: now,
                 ownedThrough: now
             });
-            let accounts: sskts.factory.pecorino.account.IAccount<sskts.factory.accountType.Point>[] = [];
+            let accounts: cinerino.factory.pecorino.account.IAccount<cinerino.factory.accountType.Point>[] = [];
             if (accountOwnershipInfos.length > 0) {
-                const accountService = new sskts.pecorinoapi.service.Account({
+                const accountService = new cinerino.pecorinoapi.service.Account({
                     endpoint: <string>process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
 
                 accounts = await accountService.search({
-                    accountType: sskts.factory.accountType.Point,
+                    accountType: cinerino.factory.accountType.Point,
                     accountNumbers: accountOwnershipInfos.map((o) => o.typeOfGood.accountNumber),
                     statuses: [],
                     limit: 100
@@ -382,11 +383,11 @@ meRouter.get(
         try {
             const now = new Date();
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
-                    accountType: sskts.factory.accountType.Point
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
+                    accountType: cinerino.factory.accountType.Point
                 },
                 ownedBy: {
                     id: req.user.sub
@@ -396,15 +397,15 @@ meRouter.get(
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
-                throw new sskts.factory.errors.NotFound('Account');
+                throw new cinerino.factory.errors.NotFound('Account');
             }
 
-            const accountService = new sskts.pecorinoapi.service.Account({
+            const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
             const actions = await accountService.searchMoneyTransferActions({
-                accountType: sskts.factory.accountType.Point,
+                accountType: cinerino.factory.accountType.Point,
                 accountNumber: accountOwnershipInfo.typeOfGood.accountNumber
             });
             res.json(actions);
@@ -427,7 +428,7 @@ meRouter.get(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const ownershipInfos = await repository.search({
                 typeOfGood: {
                     typeOf: req.params.goodType
@@ -457,7 +458,7 @@ meRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const task = await sskts.service.programMembership.createRegisterTask({
+            const task = await cinerino.service.programMembership.createRegisterTask({
                 agent: req.agent,
                 seller: {
                     typeOf: req.body.sellerType,
@@ -466,9 +467,9 @@ meRouter.put(
                 programMembershipId: req.body.programMembershipId,
                 offerIdentifier: req.body.offerIdentifier
             })({
-                seller: new sskts.repository.Seller(mongoose.connection),
-                programMembership: new sskts.repository.ProgramMembership(mongoose.connection),
-                task: new sskts.repository.Task(mongoose.connection)
+                seller: new cinerino.repository.Seller(mongoose.connection),
+                programMembership: new cinerino.repository.ProgramMembership(mongoose.connection),
+                task: new cinerino.repository.Task(mongoose.connection)
             });
             // 会員登録タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED).json(task);
@@ -491,12 +492,12 @@ meRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const task = await sskts.service.programMembership.createUnRegisterTask({
+            const task = await cinerino.service.programMembership.createUnRegisterTask({
                 agent: req.agent,
                 ownershipInfoIdentifier: req.params.identifier
             })({
-                ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
-                task: new sskts.repository.Task(mongoose.connection)
+                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+                task: new cinerino.repository.Task(mongoose.connection)
             });
             // 会員登録解除タスクとして受け入れられたのでACCEPTED
             res.status(ACCEPTED).json(task);

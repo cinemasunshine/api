@@ -11,14 +11,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 自分のクレジットカードルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const express_1 = require("express");
 const http_status_1 = require("http-status");
 const permitScopes_1 = require("../../../../middlewares/permitScopes");
 const validator_1 = require("../../../../middlewares/validator");
 const creditCardsRouter = express_1.Router();
-const debug = createDebug('sskts-api:router');
+const debug = createDebug('cinerino-api:router');
 /**
  * 会員クレジットカード追加
  */
@@ -26,7 +26,7 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const creditCard = yield sskts.service.person.creditCard.save(req.user.username, req.body)();
+        const creditCard = yield cinerino.service.person.creditCard.save(req.user.username, req.body)();
         res.status(http_status_1.CREATED)
             .json(creditCard);
     }
@@ -39,7 +39,7 @@ creditCardsRouter.post('', permitScopes_1.default(['aws.cognito.signin.user.admi
  */
 creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin']), (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const searchCardResults = yield sskts.service.person.creditCard.find(req.user.username)();
+        const searchCardResults = yield cinerino.service.person.creditCard.find(req.user.username)();
         debug('searchCardResults:', searchCardResults);
         res.json(searchCardResults);
     }
@@ -52,7 +52,7 @@ creditCardsRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin
  */
 creditCardsRouter.delete('/:cardSeq', permitScopes_1.default(['aws.cognito.signin.user.admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.person.creditCard.unsubscribe(req.user.username, req.params.cardSeq)();
+        yield cinerino.service.person.creditCard.unsubscribe(req.user.username, req.params.cardSeq)();
         res.status(http_status_1.NO_CONTENT)
             .end();
     }

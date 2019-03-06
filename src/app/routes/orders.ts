@@ -1,7 +1,7 @@
 /**
  * 注文ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { PhoneNumberFormat, PhoneNumberUtil } from 'google-libphonenumber';
 import * as mongoose from 'mongoose';
@@ -32,7 +32,7 @@ ordersRouter.post(
             const phoneUtil = PhoneNumberUtil.getInstance();
             const phoneNumber = phoneUtil.parse(req.body.telephone, 'JP');
             if (!phoneUtil.isValidNumber(phoneNumber)) {
-                next(new sskts.factory.errors.Argument('telephone', 'Invalid phone number format'));
+                next(new cinerino.factory.errors.Argument('telephone', 'Invalid phone number format'));
 
                 return;
             }
@@ -42,7 +42,7 @@ ordersRouter.post(
                 reservationNumber: req.body.confirmationNumber,
                 telephone: phoneUtil.format(phoneNumber, PhoneNumberFormat.E164)
             };
-            const repository = new sskts.repository.Order(mongoose.connection);
+            const repository = new cinerino.repository.Order(mongoose.connection);
             const order = await repository.findByLocationBranchCodeAndReservationNumber(key);
             res.json(order);
         } catch (error) {
@@ -60,7 +60,7 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const actions = await actionRepo.searchByOrderNumber({
                 orderNumber: req.params.orderNumber,
                 sort: req.query.sort
@@ -114,8 +114,8 @@ ordersRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const orderRepo = new sskts.repository.Order(mongoose.connection);
-            const searchConditions: sskts.factory.order.ISearchConditions = {
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const searchConditions: cinerino.factory.order.ISearchConditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,

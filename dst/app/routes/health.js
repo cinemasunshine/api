@@ -17,7 +17,7 @@ const healthRouter = express.Router();
 const createDebug = require("debug");
 const http_status_1 = require("http-status");
 const redis = require("../../redis");
-const debug = createDebug('sskts-api:healthRouter');
+const debug = createDebug('cinerino-api:healthRouter');
 // 接続確認をあきらめる時間(ミリ秒)
 const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 healthRouter.get('', (_, res, next) => __awaiter(this, void 0, void 0, function* () {

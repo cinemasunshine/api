@@ -1,7 +1,7 @@
 /**
  * 注文返品取引ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
 import { body, query } from 'express-validator/check';
@@ -34,18 +34,19 @@ returnOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(mongoose.connection);
-            const orderRepo = new sskts.repository.Order(mongoose.connection);
-            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+            const orderRepo = new cinerino.repository.Order(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
 
-            let order: sskts.factory.order.IOrder | undefined;
-            let returnableOrder: sskts.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
+            let order: cinerino.factory.order.IOrder | undefined;
+            let returnableOrder: cinerino.factory.transaction.returnOrder.IReturnableOrder = req.body.object.order;
 
             // APIユーザーが管理者の場合、顧客情報を自動取得
             order = await orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
             returnableOrder = { ...returnableOrder, customer: { email: order.customer.email, telephone: order.customer.telephone } };
 
-            const transaction = await sskts.service.transaction.returnOrder.start({
+            const transaction = await cinerino.service.transaction.returnOrder.start({
                 expires: req.body.expires,
                 agent: {
                     ...req.agent,
@@ -59,12 +60,14 @@ returnOrderTransactionsRouter.post(
                     clientUser: req.user,
                     cancellationFee: 0,
                     // forcibly: true,
-                    reason: sskts.factory.transaction.returnOrder.Reason.Seller
+                    reason: cinerino.factory.transaction.returnOrder.Reason.Seller
                 }
             })({
                 action: actionRepo,
+                invoice: invoiceRepo,
                 transaction: transactionRepo,
-                order: orderRepo
+                order: orderRepo,
+                cancelReservationService: <any>{}
             });
 
             // tslint:disable-next-line:no-string-literal
@@ -83,10 +86,10 @@ returnOrderTransactionsRouter.put(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(mongoose.connection);
-            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-            await sskts.service.transaction.returnOrder.confirm({
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            await cinerino.service.transaction.returnOrder.confirm({
                 id: req.params.transactionId,
                 agent: { id: req.user.sub }
             })({
@@ -118,13 +121,13 @@ returnOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-            const searchConditions: sskts.factory.transaction.ISearchConditions<sskts.factory.transactionType.ReturnOrder> = {
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.ReturnOrder> = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
                 page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
-                typeOf: sskts.factory.transactionType.ReturnOrder
+                typeOf: cinerino.factory.transactionType.ReturnOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
             const totalCount = await transactionRepo.count(searchConditions);

@@ -1,12 +1,12 @@
 /**
  * 中止注文返品取引監視
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
 
-const debug = createDebug('sskts-api');
+const debug = createDebug('cinerino-api');
 
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
@@ -15,8 +15,8 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
-    const transactionRepo = new sskts.repository.Transaction(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
+    const transactionRepo = new cinerino.repository.Transaction(connection);
 
     setInterval(
         async () => {
@@ -28,8 +28,8 @@ export default async () => {
 
             try {
                 debug('exporting tasks...');
-                await sskts.service.transaction.returnOrder.exportTasks(
-                    sskts.factory.transactionStatusType.Canceled
+                await cinerino.service.transaction.returnOrder.exportTasks(
+                    cinerino.factory.transactionStatusType.Canceled
                 )({
                     task: taskRepo,
                     transaction: transactionRepo

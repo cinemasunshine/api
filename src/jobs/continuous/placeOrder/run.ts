@@ -1,7 +1,7 @@
 /**
  * 注文作成
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -12,7 +12,7 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -23,8 +23,8 @@ export default async () => {
             count += 1;
 
             try {
-                await sskts.service.task.executeByName(
-                    sskts.factory.taskName.PlaceOrder
+                await cinerino.service.task.executeByName(
+                    cinerino.factory.taskName.PlaceOrder
                 )({
                     taskRepo: taskRepo,
                     connection: connection
@@ -43,7 +43,7 @@ export default async () => {
     setInterval(
         async () => {
             if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
-                await sskts.service.notification.report2developers(
+                await cinerino.service.notification.report2developers(
                     `[${process.env.PROJECT_ID}] api:connectMongo`,
                     `jobs:placeOrder:taskCount reached MAX_NUBMER_OF_PARALLEL_TASKS. ${count.toString()}`
                 )();
