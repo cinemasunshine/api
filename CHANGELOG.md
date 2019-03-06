@@ -10,7 +10,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
-- repositoryを完全にCinerino化
 - serviceを完全にCinerino化
 - uninstall @motionpicture/sskts-domain
 
@@ -18,11 +17,19 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Removed
 
-- 作品インポートタスクを停止
-
 ### Fixed
 
 ### Security
+
+## v14.0.0 - 2019-03-06
+
+### Changed
+
+- repositoryを完全にCinerino化
+
+### Removed
+
+- 作品インポートタスクを停止
 
 ## v13.0.2 - 2019-03-05
 
