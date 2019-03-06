@@ -27,7 +27,9 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         try {
             yield cinerino.service.task.executeByName(cinerino.factory.taskName.ImportScreeningEvents)({
                 taskRepo: taskRepo,
-                connection: connection
+                connection: connection,
+                chevreEndpoint: process.env.CHEVRE_ENDPOINT,
+                chevreAuthClient: {}
             });
         }
         catch (error) {

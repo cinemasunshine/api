@@ -27,7 +27,9 @@ export default async () => {
                     cinerino.factory.taskName.ReturnOrder
                 )({
                     taskRepo: taskRepo,
-                    connection: connection
+                    connection: connection,
+                    chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    chevreAuthClient: <any>{}
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console
