@@ -1,3 +1,4 @@
+// tslint:disable:no-useless-files
 /**
  * 映画作品インポート
  */
