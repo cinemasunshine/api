@@ -1,54 +1,51 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable:no-useless-files
 /**
  * 映画作品インポート
  */
-const sskts = require("@motionpicture/sskts-domain");
-const cron_1 = require("cron");
-const createDebug = require("debug");
-const connectMongo_1 = require("../../../connectMongo");
-const singletonProcess = require("../../../singletonProcess");
-const debug = createDebug('sskts-api:jobs');
-let holdSingletonProcess = false;
-setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    // tslint:disable-next-line:no-magic-numbers
-    holdSingletonProcess = yield singletonProcess.lock({ key: 'importMovies', ttl: 60 });
-}), 
-// tslint:disable-next-line:no-magic-numbers
-10000);
-exports.default = () => __awaiter(this, void 0, void 0, function* () {
-    const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const job = new cron_1.CronJob('10 * * * *', () => __awaiter(this, void 0, void 0, function* () {
-        if (!holdSingletonProcess) {
-            return;
-        }
-        const creativeWorkRepo = new sskts.repository.CreativeWork(connection);
-        const sellerRepo = new sskts.repository.Seller(connection);
-        // 全劇場組織を取得
-        const sellers = yield sellerRepo.search({});
-        // 劇場ごとに映画作品をインポート
-        for (const seller of sellers) {
-            if (seller.location !== undefined && seller.location.branchCode !== undefined) {
-                try {
-                    const branchCode = seller.location.branchCode;
-                    debug('importing movies...', branchCode);
-                    yield sskts.service.masterSync.importMovies(branchCode)({ creativeWork: creativeWorkRepo });
-                    debug('movies imported', branchCode);
-                }
-                catch (error) {
-                    // tslint:disable-next-line:no-console
-                    console.error(error);
-                }
-            }
-        }
-    }), undefined, true);
-    debug('job started', job);
-});
+// import * as sskts from '@motionpicture/sskts-domain';
+// import { CronJob } from 'cron';
+// import * as createDebug from 'debug';
+// import { connectMongo } from '../../../connectMongo';
+// import * as singletonProcess from '../../../singletonProcess';
+// const debug = createDebug('sskts-api:jobs');
+// let holdSingletonProcess = false;
+// setInterval(
+//     async () => {
+//         // tslint:disable-next-line:no-magic-numbers
+//         holdSingletonProcess = await singletonProcess.lock({ key: 'importMovies', ttl: 60 });
+//     },
+//     // tslint:disable-next-line:no-magic-numbers
+//     10000
+// );
+// export default async () => {
+//     const connection = await connectMongo({ defaultConnection: false });
+//     const job = new CronJob(
+//         '10 * * * *',
+//         async () => {
+//             if (!holdSingletonProcess) {
+//                 return;
+//             }
+//             const creativeWorkRepo = new sskts.repository.CreativeWork(connection);
+//             const sellerRepo = new sskts.repository.Seller(connection);
+//             // 全劇場組織を取得
+//             const sellers = await sellerRepo.search({});
+//             // 劇場ごとに映画作品をインポート
+//             for (const seller of sellers) {
+//                 if (seller.location !== undefined && seller.location.branchCode !== undefined) {
+//                     try {
+//                         const branchCode = seller.location.branchCode;
+//                         debug('importing movies...', branchCode);
+//                         await sskts.service.masterSync.importMovies(branchCode)({ creativeWork: creativeWorkRepo });
+//                         debug('movies imported', branchCode);
+//                     } catch (error) {
+//                         // tslint:disable-next-line:no-console
+//                         console.error(error);
+//                     }
+//                 }
+//             }
+//         },
+//         undefined,
+//         true
+//     );
+//     debug('job started', job);
+// };

@@ -32,7 +32,7 @@ import triggerWebhook from './continuous/triggerWebhook/run';
 import unRegisterProgramMembership from './continuous/unRegisterProgramMembership/run';
 
 import createImportScreeningEventsTask from './triggered/createImportScreeningEventsTask/run';
-import importMovies from './triggered/importMovies/run';
+// import importMovies from './triggered/importMovies/run';
 import importMovieTheaters from './triggered/importMovieTheaters/run';
 import updateScreeningEventAvailability from './triggered/updateScreeningEventAvailability/run';
 
@@ -68,7 +68,7 @@ export default async () => {
     await unRegisterProgramMembership();
 
     await createImportScreeningEventsTask();
-    await importMovies();
+    // await importMovies();
     await importMovieTheaters();
     await updateScreeningEventAvailability();
 };
