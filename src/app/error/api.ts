@@ -1,4 +1,4 @@
-import { factory } from '@motionpicture/sskts-domain';
+import { factory } from '@cinerino/domain';
 
 /**
  * APIError

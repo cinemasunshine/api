@@ -5,9 +5,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * redis cacheクライアント
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
-const debug = createDebug('sskts-api:redis');
+const debug = createDebug('cinerino-api:redis');
 const CONNECT_TIMEOUT_IN_MILLISECONDS = 3600000;
 const MAX_ATTEMPTS = 10;
 const PING_INTERVAL = 60000; // 60 seconds
@@ -26,7 +26,7 @@ setInterval(() => {
 // tslint:disable-next-line:no-single-line-block-comment
 /* istanbul ignore next */
 function createClient() {
-    const c = sskts.redis.createClient({
+    const c = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(process.env.REDIS_PORT, 10),

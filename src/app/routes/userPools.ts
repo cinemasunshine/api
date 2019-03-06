@@ -1,17 +1,17 @@
 /**
  * Cognitoユーザープールルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 
 import authentication from '../middlewares/authentication';
 import permitScopes from '../middlewares/permitScopes';
 import validator from '../middlewares/validator';
 
-const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
+const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
-    credentials: new sskts.AWS.Credentials({
+    credentials: new cinerino.AWS.Credentials({
         accessKeyId: <string>process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: <string>process.env.AWS_SECRET_ACCESS_KEY
     })
@@ -24,7 +24,7 @@ userPoolsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const userPool = await new Promise<sskts.AWS.CognitoIdentityServiceProvider.UserPoolType>((resolve, reject) => {
+            const userPool = await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolType>((resolve, reject) => {
                 cognitoIdentityServiceProvider.describeUserPool(
                     {
                         UserPoolId: req.params.userPoolId
@@ -34,7 +34,7 @@ userPoolsRouter.get(
                             reject(err);
                         } else {
                             if (data.UserPool === undefined) {
-                                reject(new sskts.factory.errors.NotFound('UserPool'));
+                                reject(new cinerino.factory.errors.NotFound('UserPool'));
                             } else {
                                 resolve(data.UserPool);
                             }
@@ -54,7 +54,7 @@ userPoolsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const clients = await new Promise<sskts.AWS.CognitoIdentityServiceProvider.UserPoolClientListType>((resolve, reject) => {
+            const clients = await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientListType>((resolve, reject) => {
                 cognitoIdentityServiceProvider.listUserPoolClients(
                     {
                         UserPoolId: req.params.userPoolId,
@@ -66,7 +66,7 @@ userPoolsRouter.get(
                             reject(err);
                         } else {
                             if (data.UserPoolClients === undefined) {
-                                reject(new sskts.factory.errors.NotFound('UserPoolClients'));
+                                reject(new cinerino.factory.errors.NotFound('UserPoolClients'));
                             } else {
                                 resolve(data.UserPoolClients);
                             }
@@ -87,7 +87,7 @@ userPoolsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const client = await new Promise<sskts.AWS.CognitoIdentityServiceProvider.UserPoolClientType>((resolve, reject) => {
+            const client = await new Promise<cinerino.AWS.CognitoIdentityServiceProvider.UserPoolClientType>((resolve, reject) => {
                 cognitoIdentityServiceProvider.describeUserPoolClient(
                     {
                         ClientId: req.params.clientId,
@@ -98,7 +98,7 @@ userPoolsRouter.get(
                             reject(err);
                         } else {
                             if (data.UserPoolClient === undefined) {
-                                reject(new sskts.factory.errors.NotFound('UserPoolClient'));
+                                reject(new cinerino.factory.errors.NotFound('UserPoolClient'));
                             } else {
                                 resolve(data.UserPoolClient);
                             }

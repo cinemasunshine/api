@@ -12,13 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * パフォーマンス空席状況を更新する
  * COA空席情報から空席状況を生成してredisに保管する
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 let holdSingletonProcess = false;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
@@ -35,7 +35,7 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const redisClient = sskts.redis.createClient({
+    const redisClient = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(process.env.REDIS_PORT, 10),
@@ -46,8 +46,8 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redisClient);
-        const sellerRepo = new sskts.repository.Seller(connection);
+        const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redisClient);
+        const sellerRepo = new cinerino.repository.Seller(connection);
         // 販売者ごとにイベント在庫状況を更新
         const sellers = yield sellerRepo.search({});
         const startFrom = moment()
@@ -58,7 +58,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         yield Promise.all(sellers.map((seller) => __awaiter(this, void 0, void 0, function* () {
             try {
                 if (seller.location !== undefined && seller.location.branchCode !== undefined) {
-                    yield sskts.service.itemAvailability.updateIndividualScreeningEvents(seller.location.branchCode, startFrom, startThrough)({ itemAvailability: itemAvailabilityRepo });
+                    yield cinerino.service.offer.updateScreeningEventItemAvailability(seller.location.branchCode, startFrom, startThrough)({ itemAvailability: itemAvailabilityRepo });
                     debug('item availability updated');
                 }
             }

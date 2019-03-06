@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 会員プログラムルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../middlewares/authentication");
@@ -33,7 +33,7 @@ ownershipInfosRouter.get('/countByRegisterDateAndTheater', permitScopes_1.defaul
             createdAtTo: new Date(toDate),
             theaterIds: theaterIds
         };
-        const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const andConditions = [
             { 'typeOfGood.typeOf': 'ProgramMembership' }
         ];

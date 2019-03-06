@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 自分の注文ルーター
  */
-const cinerino = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const mongoose = require("mongoose");
 const authentication_1 = require("../../../middlewares/authentication");

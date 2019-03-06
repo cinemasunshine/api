@@ -2,8 +2,8 @@
 /**
  * Expressアプリケーション
  */
+const cinerino = require("@cinerino/domain");
 const middlewares = require("@motionpicture/express-middleware");
-const sskts = require("@motionpicture/sskts-domain");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const createDebug = require("debug");
@@ -15,7 +15,7 @@ const connectMongo_1 = require("../connectMongo");
 const errorHandler_1 = require("./middlewares/errorHandler");
 const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const router_1 = require("./routes/router");
-const debug = createDebug('sskts-api:*');
+const debug = createDebug('cinerino-api:*');
 const app = express();
 app.set('query parser', (str) => qs.parse(str, {
     arrayLimit: 1000,
@@ -28,8 +28,8 @@ app.use(middlewares.basicAuth({
     name: process.env.BASIC_AUTH_NAME,
     pass: process.env.BASIC_AUTH_PASS,
     unauthorizedHandler: (__, res, next) => {
-        res.setHeader('WWW-Authenticate', 'Basic realm="sskts-api Authentication"');
-        next(new sskts.factory.errors.Unauthorized());
+        res.setHeader('WWW-Authenticate', 'Basic realm="cinerino-api Authentication"');
+        next(new cinerino.factory.errors.Unauthorized());
     }
 }));
 const options = {

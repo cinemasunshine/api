@@ -2,7 +2,7 @@
  * oauthミドルウェア
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { cognitoAuth } from '@motionpicture/express-middleware';
 import { NextFunction, Request, Response } from 'express';
@@ -17,7 +17,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         await cognitoAuth({
             issuers: ISSUERS,
             authorizedHandler: async (user, token) => {
-                const identifier: sskts.factory.person.IIdentifier = [
+                const identifier: cinerino.factory.person.IIdentifier = [
                     {
                         name: 'tokenIssuer',
                         value: user.iss
@@ -45,10 +45,10 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                     // no op
                 }
 
-                let programMembership: sskts.factory.programMembership.IProgramMembership | undefined;
+                let programMembership: cinerino.factory.programMembership.IProgramMembership | undefined;
                 if (user.username !== undefined) {
                     programMembership = {
-                        typeOf: <sskts.factory.programMembership.ProgramMembershipType>'ProgramMembership',
+                        typeOf: <cinerino.factory.programMembership.ProgramMembershipType>'ProgramMembership',
                         membershipNumber: user.username,
                         programName: 'Amazon Cognito',
                         award: [],
@@ -59,7 +59,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {
-                    typeOf: sskts.factory.personType.Person,
+                    typeOf: cinerino.factory.personType.Person,
                     id: user.sub,
                     memberOf: programMembership,
                     identifier: identifier
@@ -68,10 +68,10 @@ export default async (req: Request, res: Response, next: NextFunction) => {
                 next();
             },
             unauthorizedHandler: (err) => {
-                next(new sskts.factory.errors.Unauthorized(err.message));
+                next(new cinerino.factory.errors.Unauthorized(err.message));
             }
         })(req, res, next);
     } catch (error) {
-        next(new sskts.factory.errors.Unauthorized(error.message));
+        next(new cinerino.factory.errors.Unauthorized(error.message));
     }
 };

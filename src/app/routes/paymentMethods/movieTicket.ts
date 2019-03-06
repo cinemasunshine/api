@@ -1,7 +1,7 @@
 /**
  * ムビチケ決済方法ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 
@@ -18,7 +18,7 @@ movieTicketPaymentMethodsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const paymentMethodRepo = new sskts.repository.PaymentMethod(mongoose.connection);
+            const paymentMethodRepo = new cinerino.repository.PaymentMethod(mongoose.connection);
             const searchCoinditions = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers

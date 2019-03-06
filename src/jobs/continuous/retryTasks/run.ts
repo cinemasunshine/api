@@ -1,7 +1,7 @@
 /**
  * タスクリトライ
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -13,7 +13,7 @@ export default async () => {
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
     const RETRY_INTERVAL_MINUTES = 10;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -24,7 +24,7 @@ export default async () => {
             count += 1;
 
             try {
-                await sskts.service.task.retry(RETRY_INTERVAL_MINUTES)({ task: taskRepo });
+                await cinerino.service.task.retry(RETRY_INTERVAL_MINUTES)({ task: taskRepo });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);

@@ -11,16 +11,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 取引期限監視
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
-const debug = createDebug('sskts-api');
+const debug = createDebug('cinerino-api');
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
-    const transactionRepo = new sskts.repository.Transaction(connection);
+    const transactionRepo = new cinerino.repository.Transaction(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;

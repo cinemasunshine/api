@@ -11,23 +11,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文返品処理
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 1000;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
         }
         count += 1;
         try {
-            yield sskts.service.task.executeByName(sskts.factory.taskName.ReturnOrder)({
+            yield cinerino.service.task.executeByName(cinerino.factory.taskName.ReturnOrder)({
                 taskRepo: taskRepo,
-                connection: connection
+                connection: connection,
+                chevreEndpoint: process.env.CHEVRE_ENDPOINT,
+                chevreAuthClient: {}
             });
         }
         catch (error) {

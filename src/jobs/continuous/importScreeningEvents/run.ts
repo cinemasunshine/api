@@ -1,7 +1,7 @@
 /**
  * 上映イベント在庫仕入れ
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -12,7 +12,7 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 0; // 処理としてCPU使用量が多めなので、並列実行数は少なめにセット
     const INTERVAL_MILLISECONDS = 100;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -23,11 +23,13 @@ export default async () => {
             count += 1;
 
             try {
-                await sskts.service.task.executeByName(
-                    sskts.factory.taskName.ImportScreeningEvents
+                await cinerino.service.task.executeByName(
+                    cinerino.factory.taskName.ImportScreeningEvents
                 )({
                     taskRepo: taskRepo,
-                    connection: connection
+                    connection: connection,
+                    chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    chevreAuthClient: <any>{}
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

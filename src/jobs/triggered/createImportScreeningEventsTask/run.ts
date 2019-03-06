@@ -1,7 +1,7 @@
 /**
  * 上映イベントインポートタスク作成
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -9,7 +9,7 @@ import * as moment from 'moment';
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 
 /**
  * 上映イベントを何週間後までインポートするか
@@ -41,9 +41,9 @@ export default async () => {
 
             const now = new Date();
 
-            const placeRepo = new sskts.repository.Place(connection);
-            const sellerRepo = new sskts.repository.Seller(connection);
-            const taskRepo = new sskts.repository.Task(connection);
+            const placeRepo = new cinerino.repository.Place(connection);
+            const sellerRepo = new cinerino.repository.Seller(connection);
+            const taskRepo = new cinerino.repository.Task(connection);
 
             // 全劇場組織を取得
             const sellers = await sellerRepo.search({});
@@ -65,9 +65,9 @@ export default async () => {
                         const importThrough = moment(importFrom)
                             .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
                             .toDate();
-                        const taskAttributes: sskts.factory.task.IAttributes<sskts.factory.taskName.ImportScreeningEvents> = {
-                            name: sskts.factory.taskName.ImportScreeningEvents,
-                            status: sskts.factory.taskStatus.Ready,
+                        const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
+                            name: cinerino.factory.taskName.ImportScreeningEvents,
+                            status: cinerino.factory.taskStatus.Ready,
                             runsAt: now,
                             remainingNumberOfTries: 1,
                             numberOfTried: 0,

@@ -3,11 +3,11 @@
  * @module middlewares.requireMember
  */
 
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 
-const debug = createDebug('sskts-api:middlewares:requireMember');
+const debug = createDebug('cinerino-api:middlewares:requireMember');
 
 export default (req: Request, __: Response, next: NextFunction) => {
     // 会員としてログイン済みであればOK
@@ -15,7 +15,7 @@ export default (req: Request, __: Response, next: NextFunction) => {
         debug('logged in as', req.user.sub);
         next();
     } else {
-        next(new sskts.factory.errors.Forbidden('login required'));
+        next(new cinerino.factory.errors.Forbidden('login required'));
     }
 };
 

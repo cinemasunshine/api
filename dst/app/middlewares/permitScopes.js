@@ -4,9 +4,9 @@
  * @module middlewares.permitScopes
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
-const debug = createDebug('sskts-api:middlewares:permitScopes');
+const debug = createDebug('cinerino-api:middlewares:permitScopes');
 exports.default = (permittedScopes) => {
     return (req, __, next) => {
         if (process.env.RESOURECE_SERVER_IDENTIFIER === undefined) {
@@ -28,7 +28,7 @@ exports.default = (permittedScopes) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                next(new sskts.factory.errors.Forbidden('scope requirements not satisfied'));
+                next(new cinerino.factory.errors.Forbidden('scope requirements not satisfied'));
             }
             else {
                 next();

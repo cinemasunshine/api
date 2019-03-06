@@ -4,7 +4,7 @@
  * @module middlewares.notFoundHandler
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 exports.default = (req, __, next) => {
-    next(new sskts.factory.errors.NotFound(`router for [${req.originalUrl}]`));
+    next(new cinerino.factory.errors.NotFound(`router for [${req.originalUrl}]`));
 };

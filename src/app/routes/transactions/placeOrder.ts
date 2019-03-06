@@ -1,8 +1,9 @@
 /**
  * 注文取引ルーター
  */
+import * as cinerino from '@cinerino/domain';
+
 import * as middlewares from '@motionpicture/express-middleware';
-import * as sskts from '@motionpicture/sskts-domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 // tslint:disable-next-line:no-submodule-imports
@@ -19,9 +20,9 @@ import validator from '../../middlewares/validator';
 
 import * as redis from '../../../redis';
 
-const debug = createDebug('sskts-api:placeOrderTransactionsRouter');
+const debug = createDebug('cinerino-api:placeOrderTransactionsRouter');
 
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
@@ -53,25 +54,25 @@ const rateLimit4transactionInProgress =
         limitExceededHandler: (__0, __1, res, next) => {
             res.setHeader('Retry-After', AGGREGATION_UNIT_IN_SECONDS);
             const message = `Retry after ${AGGREGATION_UNIT_IN_SECONDS} seconds for your transaction.`;
-            next(new sskts.factory.errors.RateLimitExceeded(message));
+            next(new cinerino.factory.errors.RateLimitExceeded(message));
         },
         // スコープ生成ロジックをカスタマイズ
         scopeGenerator: (req) => `placeOrderTransaction.${<string>req.params.transactionId}`
     });
 
-export interface ICOATicket extends sskts.COA.services.master.ITicketResult {
+export interface ICOATicket extends cinerino.COA.services.master.ITicketResult {
     theaterCode: string;
 }
 
 let coaTickets: ICOATicket[];
 
 function initializeCOATickets() {
-    return async (repos: { place: sskts.repository.Place }) => {
+    return async (repos: { place: cinerino.repository.Place }) => {
         try {
             const tickets: ICOATicket[] = [];
             const movieTheaters = await repos.place.searchMovieTheaters({});
             await Promise.all(movieTheaters.map(async (movieTheater) => {
-                const ticketResults = await sskts.COA.services.master.ticket({ theaterCode: movieTheater.branchCode });
+                const ticketResults = await cinerino.COA.services.master.ticket({ theaterCode: movieTheater.branchCode });
                 debug(movieTheater.branchCode, ticketResults.length, 'COA Tickets found');
                 tickets.push(...ticketResults.map((t) => {
                     return { ...t, theaterCode: movieTheater.branchCode };
@@ -87,7 +88,7 @@ function initializeCOATickets() {
 
 const USE_IN_MEMORY_OFFER_REPO = (process.env.USE_IN_MEMORY_OFFER_REPO === '1') ? true : false;
 if (USE_IN_MEMORY_OFFER_REPO) {
-    initializeCOATickets()({ place: new sskts.repository.Place(mongoose.connection) })
+    initializeCOATickets()({ place: new cinerino.repository.Place(mongoose.connection) })
         .then()
         // tslint:disable-next-line:no-console
         .catch(console.error);
@@ -96,7 +97,7 @@ if (USE_IN_MEMORY_OFFER_REPO) {
     setInterval(
         async () => {
             try {
-                await initializeCOATickets()({ place: new sskts.repository.Place(mongoose.connection) });
+                await initializeCOATickets()({ place: new cinerino.repository.Place(mongoose.connection) });
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error(error);
@@ -134,13 +135,13 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            let passport: sskts.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
+            let passport: cinerino.factory.transaction.placeOrder.IPassportBeforeStart | undefined;
             if (!WAITER_DISABLED) {
                 if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
-                    throw new sskts.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
+                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_PASSPORT_ISSUER undefined');
                 }
                 if (process.env.WAITER_SECRET === undefined) {
-                    throw new sskts.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
+                    throw new cinerino.factory.errors.ServiceUnavailable('WAITER_SECRET undefined');
                 }
                 passport = {
                     token: <string>req.body.passportToken,
@@ -149,7 +150,7 @@ placeOrderTransactionsRouter.post(
                 };
             }
 
-            const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+            const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
             const seller = await sellerRepo.findById({ id: <string>req.body.sellerId });
 
             // パラメーターの形式をunix timestampからISO 8601フォーマットに変更したため、互換性を維持するように期限をセット
@@ -158,7 +159,7 @@ placeOrderTransactionsRouter.post(
                 ? moment.unix(Number(<string>req.body.expires)).toDate()
                 : moment(<string>req.body.expires).toDate();
 
-            const transaction = await sskts.service.transaction.placeOrderInProgress.start({
+            const transaction = await cinerino.service.transaction.placeOrderInProgress.start({
                 expires: expires,
                 agent: {
                     ...req.agent,
@@ -168,14 +169,14 @@ placeOrderTransactionsRouter.post(
                     ]
                 },
                 seller: {
-                    typeOf: sskts.factory.organizationType.MovieTheater,
+                    typeOf: cinerino.factory.organizationType.MovieTheater,
                     id: <string>req.body.sellerId
                 },
                 object: {
                     clientUser: req.user,
                     passport: passport
                 },
-                passportValidator: (params: { passport: sskts.factory.waiter.passport.IPassport }) => {
+                passportValidator: (params: { passport: cinerino.factory.waiter.passport.IPassport }) => {
                     // tslint:disable-next-line:no-single-line-block-comment
                     /* istanbul ignore next */
                     if (process.env.WAITER_PASSPORT_ISSUER === undefined) {
@@ -197,7 +198,7 @@ placeOrderTransactionsRouter.post(
                 }
             })({
                 seller: sellerRepo,
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             // tslint:disable-next-line:no-string-literal
@@ -233,15 +234,15 @@ placeOrderTransactionsRouter.put(
                 const phoneUtil = PhoneNumberUtil.getInstance();
                 const phoneNumber = phoneUtil.parse(<string>req.body.telephone, 'JP'); // 日本の電話番号前提仕様
                 if (!phoneUtil.isValidNumber(phoneNumber)) {
-                    throw new sskts.factory.errors.Argument('contact.telephone', 'Invalid phone number format.');
+                    throw new cinerino.factory.errors.Argument('contact.telephone', 'Invalid phone number format.');
                 }
 
                 formattedTelephone = phoneUtil.format(phoneNumber, PhoneNumberFormat.E164);
             } catch (error) {
-                throw new sskts.factory.errors.Argument('contact.telephone', error.message);
+                throw new cinerino.factory.errors.Argument('contact.telephone', error.message);
             }
 
-            const contact = await sskts.service.transaction.placeOrderInProgress.setCustomerContact({
+            const contact = await cinerino.service.transaction.placeOrderInProgress.setCustomerContact({
                 id: <string>req.params.transactionId,
                 agent: { id: req.user.sub },
                 object: {
@@ -253,7 +254,7 @@ placeOrderTransactionsRouter.put(
                     }
                 }
             })({
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED).json(contact);
@@ -273,7 +274,7 @@ placeOrderTransactionsRouter.post(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.create({
                 object: {
                     event: { id: <string>req.body.eventIdentifier },
                     acceptedOffer: req.body.offers
@@ -281,10 +282,10 @@ placeOrderTransactionsRouter.post(
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId }
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                event: new sskts.repository.Event(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
-                offer: (coaTickets !== undefined) ? new sskts.repository.Offer(coaTickets) : undefined
+                action: new cinerino.repository.Action(mongoose.connection),
+                event: new cinerino.repository.Event(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined
             });
 
             res.status(CREATED).json(action);
@@ -304,13 +305,13 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.cancel({
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 id: <string>req.params.actionId
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(NO_CONTENT).end();
@@ -330,7 +331,7 @@ placeOrderTransactionsRouter.patch(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation.changeOffers({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.offer.seatReservation4coa.changeOffers({
                 object: {
                     event: { id: <string>req.body.eventIdentifier },
                     acceptedOffer: req.body.offers
@@ -339,10 +340,10 @@ placeOrderTransactionsRouter.patch(
                 transaction: { id: <string>req.params.transactionId },
                 id: <string>req.params.actionId
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                event: new sskts.repository.Event(mongoose.connection),
-                offer: (coaTickets !== undefined) ? new sskts.repository.Offer(coaTickets) : undefined,
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                event: new cinerino.repository.Event(mongoose.connection),
+                offer: (coaTickets !== undefined) ? new cinerino.repository.Offer(coaTickets) : undefined,
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.json(action);
@@ -416,7 +417,7 @@ placeOrderTransactionsRouter.delete(
 //         try {
 //             // 会員IDを強制的にログイン中の人物IDに変更
 //             type ICreditCard4authorizeAction =
-//                 sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.ICreditCard4authorizeAction;
+//                 cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.ICreditCard4authorizeAction;
 //             const creditCard: ICreditCard4authorizeAction = {
 //                 ...req.body.creditCard,
 //                 ...{
@@ -426,7 +427,7 @@ placeOrderTransactionsRouter.delete(
 //             debug('authorizing credit card...', creditCard);
 
 //             debug('authorizing credit card...', req.body.creditCard);
-//             const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
+//             const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.check({
 //                 agentId: req.user.sub,
 //                 transactionId: req.params.transactionId,
 //                 orderId: req.body.orderId,
@@ -434,9 +435,9 @@ placeOrderTransactionsRouter.delete(
 //                 method: req.body.method,
 //                 creditCard: creditCard
 //             })({
-//                 action: new sskts.repository.Action(mongoose.connection),
-//                 transaction: new sskts.repository.Transaction(mongoose.connection),
-//                 organization: new sskts.repository.Seller(mongoose.connection)
+//                 action: new cinerino.repository.Action(mongoose.connection),
+//                 transaction: new cinerino.repository.Transaction(mongoose.connection),
+//                 organization: new cinerino.repository.Seller(mongoose.connection)
 //             });
 
 //             res.status(ACCEPTED).json({
@@ -467,7 +468,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             // 会員IDを強制的にログイン中の人物IDに変更
-            type ICreditCard4authorizeAction = sskts.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
+            type ICreditCard4authorizeAction = cinerino.factory.action.authorize.paymentMethod.creditCard.ICreditCard;
             const creditCard: ICreditCard4authorizeAction = {
                 ...req.body.creditCard,
                 ...{
@@ -477,11 +478,11 @@ placeOrderTransactionsRouter.post(
             debug('authorizing credit card...', creditCard);
 
             debug('authorizing credit card...', req.body.creditCard);
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.create({
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 object: {
-                    typeOf: sskts.factory.paymentMethodType.CreditCard,
+                    typeOf: cinerino.factory.paymentMethodType.CreditCard,
                     additionalProperty: req.body.additionalProperty,
                     orderId: <string>req.body.orderId,
                     amount: Number(<string>req.body.amount),
@@ -489,9 +490,9 @@ placeOrderTransactionsRouter.post(
                     creditCard: creditCard
                 }
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
-                seller: new sskts.repository.Seller(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                seller: new cinerino.repository.Seller(mongoose.connection)
             });
 
             res.status(CREATED).json({
@@ -513,13 +514,13 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.creditCard.cancel({
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 id: <string>req.params.actionId
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(NO_CONTENT).end();
@@ -543,7 +544,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const authorizeObject = {
-                typeOf: sskts.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
+                typeOf: cinerino.factory.action.authorize.discount.mvtk.ObjectType.Mvtk,
                 // tslint:disable-next-line:no-magic-numbers
                 price: Number(req.body.price),
                 transactionId: <string>req.params.transactionId,
@@ -562,14 +563,14 @@ placeOrderTransactionsRouter.post(
                     skhnCd: req.body.seatInfoSyncIn.skhnCd
                 }
             };
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.create({
                 agentId: req.user.sub,
                 transactionId: <string>req.params.transactionId,
                 authorizeObject: authorizeObject
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                paymentMethod: new sskts.repository.PaymentMethod(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                paymentMethod: new cinerino.repository.PaymentMethod(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED).json({
@@ -591,13 +592,13 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.discount.mvtk.cancel({
                 agentId: req.user.sub,
                 transactionId: <string>req.params.transactionId,
                 actionId: <string>req.params.actionId
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(NO_CONTENT).end();
@@ -623,10 +624,10 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
             // 必要な会員プログラムに加入しているかどうか確認
-            const programMemberships = await ownershipInfoRepo.search<sskts.factory.programMembership.ProgramMembershipType>({
+            const programMemberships = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
                 typeOfGood: {
                     typeOf: 'ProgramMembership'
                 },
@@ -637,32 +638,32 @@ placeOrderTransactionsRouter.post(
             const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
                 .find((a) => a === POINT_AWARD);
             if (pecorinoPaymentAward === undefined) {
-                throw new sskts.factory.errors.Forbidden('Membership program requirements not satisfied');
+                throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
             }
 
             // pecorino転送取引サービスクライアントを生成
-            const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
+            const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.create({
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 object: {
-                    typeOf: sskts.factory.paymentMethodType.Account,
+                    typeOf: cinerino.factory.paymentMethodType.Account,
                     amount: Number(req.body.amount),
-                    currency: sskts.factory.accountType.Point,
+                    currency: cinerino.factory.accountType.Point,
                     fromAccount: {
-                        accountType: sskts.factory.accountType.Point,
+                        accountType: cinerino.factory.accountType.Point,
                         accountNumber: <string>req.body.fromAccountNumber
                     },
                     notes: <string>req.body.notes
                 }
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                seller: new sskts.repository.Seller(mongoose.connection),
-                ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
+                action: new cinerino.repository.Action(mongoose.connection),
+                seller: new cinerino.repository.Seller(mongoose.connection),
+                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
                 transferTransactionService: transferService
             });
             res.status(CREATED).json(action);
@@ -683,17 +684,17 @@ placeOrderTransactionsRouter.delete(
     async (req, res, next) => {
         try {
             // pecorino転送取引サービスクライアントを生成
-            const transferService = new sskts.pecorinoapi.service.transaction.Transfer({
+            const transferService = new cinerino.pecorinoapi.service.transaction.Transfer({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.paymentMethod.account.cancel({
                 id: <string>req.params.actionId,
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId }
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
                 transferTransactionService: transferService
             });
             res.status(NO_CONTENT).end();
@@ -719,9 +720,9 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
-            const programMemberships = await ownershipInfoRepo.search<sskts.factory.programMembership.ProgramMembershipType>({
+            const programMemberships = await ownershipInfoRepo.search<cinerino.factory.programMembership.ProgramMembershipType>({
                 typeOfGood: {
                     typeOf: 'ProgramMembership'
                 },
@@ -732,15 +733,15 @@ placeOrderTransactionsRouter.post(
             const pecorinoPaymentAward = programMemberships.reduce((a, b) => [...a, ...b.typeOfGood.award], [])
                 .find((a) => a === POINT_AWARD);
             if (pecorinoPaymentAward === undefined) {
-                throw new sskts.factory.errors.Forbidden('Membership program requirements not satisfied');
+                throw new cinerino.factory.errors.Forbidden('Membership program requirements not satisfied');
             }
 
             // pecorino転送取引サービスクライアントを生成
-            const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
+            const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const action = await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
+            const action = await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.create({
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 object: {
@@ -749,9 +750,9 @@ placeOrderTransactionsRouter.post(
                     notes: <string>req.body.notes
                 }
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
-                ownershipInfo: new sskts.repository.OwnershipInfo(mongoose.connection),
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                ownershipInfo: new cinerino.repository.OwnershipInfo(mongoose.connection),
                 depositTransactionService: depositService
             });
             res.status(CREATED).json(action);
@@ -774,17 +775,17 @@ placeOrderTransactionsRouter.delete(
     rateLimit4transactionInProgress,
     async (req, res, next) => {
         try {
-            const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
+            const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await sskts.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
+            await cinerino.service.transaction.placeOrderInProgress.action.authorize.award.point.cancel({
                 agent: { id: req.user.sub },
                 transaction: { id: <string>req.params.transactionId },
                 id: <string>req.params.actionId
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
                 depositTransactionService: depositService
             });
             res.status(NO_CONTENT).end();
@@ -802,7 +803,7 @@ placeOrderTransactionsRouter.post(
     async (req, res, next) => {
         try {
             const orderDate = new Date();
-            const order = await sskts.service.transaction.placeOrderInProgress.confirm({
+            const { order } = await cinerino.service.transaction.placeOrderInProgress.confirm({
                 id: <string>req.params.transactionId,
                 agent: { id: req.user.sub },
                 result: {
@@ -813,7 +814,7 @@ placeOrderTransactionsRouter.post(
 
                             // COAに適合させるため、座席予約の場合、確認番号をCOA予約番号に強制変換
                             if (firstOffer !== undefined
-                                && firstOffer.itemOffered.typeOf === sskts.factory.chevre.reservationType.EventReservation) {
+                                && firstOffer.itemOffered.typeOf === cinerino.factory.chevre.reservationType.EventReservation) {
                                 return Number(firstOffer.itemOffered.reservationNumber);
                             } else {
                                 return params.confirmationNumber;
@@ -826,18 +827,18 @@ placeOrderTransactionsRouter.post(
                     sendEmailMessage: (req.body.sendEmailMessage === true) ? true : false
                 }
             })({
-                action: new sskts.repository.Action(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection),
-                orderNumber: new sskts.repository.OrderNumber(redis.getClient()),
-                seller: new sskts.repository.Seller(mongoose.connection)
+                action: new cinerino.repository.Action(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection),
+                orderNumber: new cinerino.repository.OrderNumber(redis.getClient()),
+                seller: new cinerino.repository.Seller(mongoose.connection)
             });
             debug('transaction confirmed', order);
 
             // 非同期でタスクエクスポート(APIレスポンスタイムに影響を与えないように)
             // tslint:disable-next-line:no-floating-promises
-            sskts.service.transaction.placeOrder.exportTasks(sskts.factory.transactionStatusType.Confirmed)({
-                task: new sskts.repository.Task(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+            cinerino.service.transaction.placeOrder.exportTasks(cinerino.factory.transactionStatusType.Confirmed)({
+                task: new cinerino.repository.Task(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED).json(order);
@@ -856,9 +857,9 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
             await transactionRepo.cancel({
-                typeOf: sskts.factory.transactionType.PlaceOrder,
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
                 id: <string>req.params.transactionId
             });
             debug('transaction canceled.');
@@ -875,10 +876,10 @@ placeOrderTransactionsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const task = await sskts.service.transaction.placeOrder.sendEmail(
+            const task = await cinerino.service.transaction.placeOrder.sendEmail(
                 <string>req.params.transactionId,
                 {
-                    typeOf: sskts.factory.creativeWorkType.EmailMessage,
+                    typeOf: cinerino.factory.creativeWorkType.EmailMessage,
                     sender: {
                         name: req.body.sender.name,
                         email: req.body.sender.email
@@ -891,8 +892,8 @@ placeOrderTransactionsRouter.post(
                     text: req.body.text
                 }
             )({
-                task: new sskts.repository.Task(mongoose.connection),
-                transaction: new sskts.repository.Transaction(mongoose.connection)
+                task: new cinerino.repository.Task(mongoose.connection),
+                transaction: new cinerino.repository.Transaction(mongoose.connection)
             });
 
             res.status(CREATED).json(task);
@@ -917,8 +918,8 @@ placeOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-            const searchConditions: sskts.factory.transaction.ISearchConditions<sskts.factory.transactionType.PlaceOrder> = {
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
@@ -943,10 +944,10 @@ placeOrderTransactionsRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const actionRepo = new sskts.repository.Action(mongoose.connection);
+            const actionRepo = new cinerino.repository.Action(mongoose.connection);
             const actions = await actionRepo.searchByPurpose({
                 purpose: {
-                    typeOf: sskts.factory.transactionType.PlaceOrder,
+                    typeOf: cinerino.factory.transactionType.PlaceOrder,
                     id: <string>req.params.transactionId
                 },
                 sort: req.query.sort

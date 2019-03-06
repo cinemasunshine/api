@@ -11,12 +11,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 劇場インポート
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const cron_1 = require("cron");
 const createDebug = require("debug");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 let holdSingletonProcess = false;
 setInterval(() => __awaiter(this, void 0, void 0, function* () {
     // tslint:disable-next-line:no-magic-numbers
@@ -30,8 +30,8 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }
-        const sellerRepo = new sskts.repository.Seller(connection);
-        const placeRepo = new sskts.repository.Place(connection);
+        const sellerRepo = new cinerino.repository.Seller(connection);
+        const placeRepo = new cinerino.repository.Place(connection);
         // 全劇場組織を取得
         const sellers = yield sellerRepo.search({});
         for (const seller of sellers) {
@@ -39,7 +39,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                 try {
                     const branchCode = seller.location.branchCode;
                     debug('importing movieTheater...', branchCode);
-                    yield sskts.service.masterSync.importMovieTheater(branchCode)({
+                    yield cinerino.service.masterSync.importMovieTheater(branchCode)({
                         seller: sellerRepo,
                         place: placeRepo
                     });

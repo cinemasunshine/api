@@ -3,16 +3,16 @@
  * ユーザーの型をここで定義しています。
  * @ignore
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as express from 'express';
 
 declare global {
     namespace Express {
-        export type IUser = sskts.factory.clientUser.IClientUser;
+        export type IUser = cinerino.factory.clientUser.IClientUser;
 
         // tslint:disable-next-line:interface-name
         export interface Request {
-            agent: sskts.factory.person.IPerson;
+            agent: cinerino.factory.person.IPerson;
             user: IUser;
             accessToken: string;
         }

@@ -1,14 +1,14 @@
 /**
  * 劇場インポート
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 
 let holdSingletonProcess = false;
 setInterval(
@@ -30,8 +30,8 @@ export default async () => {
                 return;
             }
 
-            const sellerRepo = new sskts.repository.Seller(connection);
-            const placeRepo = new sskts.repository.Place(connection);
+            const sellerRepo = new cinerino.repository.Seller(connection);
+            const placeRepo = new cinerino.repository.Place(connection);
 
             // 全劇場組織を取得
             const sellers = await sellerRepo.search({});
@@ -41,7 +41,7 @@ export default async () => {
                     try {
                         const branchCode = seller.location.branchCode;
                         debug('importing movieTheater...', branchCode);
-                        await sskts.service.masterSync.importMovieTheater(branchCode)({
+                        await cinerino.service.masterSync.importMovieTheater(branchCode)({
                             seller: sellerRepo,
                             place: placeRepo
                         });

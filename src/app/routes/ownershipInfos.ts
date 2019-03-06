@@ -1,7 +1,7 @@
 /**
  * 会員プログラムルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 
@@ -34,7 +34,7 @@ ownershipInfosRouter.get(
                 theaterIds: theaterIds
             };
 
-            const repository = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const repository = new cinerino.repository.OwnershipInfo(mongoose.connection);
 
             const andConditions: any[] = [
                 { 'typeOfGood.typeOf': 'ProgramMembership' }

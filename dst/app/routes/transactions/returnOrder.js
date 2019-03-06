@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文返品取引ルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
@@ -35,15 +35,16 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
         .withMessage((_, options) => `${options.path} is required`)
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(mongoose.connection);
-        const orderRepo = new sskts.repository.Order(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const invoiceRepo = new cinerino.repository.Invoice(mongoose.connection);
+        const orderRepo = new cinerino.repository.Order(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         let order;
         let returnableOrder = req.body.object.order;
         // APIユーザーが管理者の場合、顧客情報を自動取得
         order = yield orderRepo.findByOrderNumber({ orderNumber: returnableOrder.orderNumber });
         returnableOrder = Object.assign({}, returnableOrder, { customer: { email: order.customer.email, telephone: order.customer.telephone } });
-        const transaction = yield sskts.service.transaction.returnOrder.start({
+        const transaction = yield cinerino.service.transaction.returnOrder.start({
             expires: req.body.expires,
             agent: Object.assign({}, req.agent, { identifier: [
                     ...(req.agent.identifier !== undefined) ? req.agent.identifier : [],
@@ -54,12 +55,14 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
                 clientUser: req.user,
                 cancellationFee: 0,
                 // forcibly: true,
-                reason: sskts.factory.transaction.returnOrder.Reason.Seller
+                reason: cinerino.factory.transaction.returnOrder.Reason.Seller
             }
         })({
             action: actionRepo,
+            invoice: invoiceRepo,
             transaction: transactionRepo,
-            order: orderRepo
+            order: orderRepo,
+            cancelReservationService: {}
         });
         // tslint:disable-next-line:no-string-literal
         // const host = req.headers['host'];
@@ -72,10 +75,10 @@ returnOrderTransactionsRouter.post('/start', permitScopes_1.default(['admin']), 
 }));
 returnOrderTransactionsRouter.put('/:transactionId/confirm', permitScopes_1.default(['admin']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const actionRepo = new sskts.repository.Action(mongoose.connection);
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
-        yield sskts.service.transaction.returnOrder.confirm({
+        const actionRepo = new cinerino.repository.Action(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+        yield cinerino.service.transaction.returnOrder.confirm({
             id: req.params.transactionId,
             agent: { id: req.user.sub }
         })({
@@ -100,10 +103,10 @@ returnOrderTransactionsRouter.get('', permitScopes_1.default(['admin']), ...[
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const transactionRepo = new sskts.repository.Transaction(mongoose.connection);
+        const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: sskts.factory.transactionType.ReturnOrder });
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1, typeOf: cinerino.factory.transactionType.ReturnOrder });
         const transactions = yield transactionRepo.search(searchConditions);
         const totalCount = yield transactionRepo.count(searchConditions);
         res.set('X-Total-Count', totalCount.toString());

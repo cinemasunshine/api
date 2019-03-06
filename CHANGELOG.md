@@ -10,6 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- serviceを完全にCinerino化
+- uninstall @motionpicture/sskts-domain
+
 ### Deprecated
 
 ### Removed

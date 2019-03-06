@@ -11,10 +11,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * MongoDBコネクション確立
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const createDebug = require("debug");
 const mongoose = require("mongoose");
-const debug = createDebug('sskts-api:connectMongo');
+const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = process.env.MONGOLAB_URI;
 const connectOptions = {
@@ -68,12 +68,12 @@ function connectMongo(params) {
                 yield connection.close();
                 yield connection.openUri(MONGOLAB_URI, undefined, undefined, connectOptions);
                 debug('MongoDB reconnected!');
-                yield sskts.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, 'MongoDB connection reestablished!')();
+                yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, 'MongoDB connection reestablished!')();
             }
             catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error('mongoose.connect:', error);
-                yield sskts.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, `MongoDB connection error: ${error.stack}`)();
+                yield cinerino.service.notification.report2developers(`[${process.env.PROJECT_ID}] api:connectMongo`, `MongoDB connection error: ${error.stack}`)();
             }
         }), PING_INTERVAL);
         return connection;

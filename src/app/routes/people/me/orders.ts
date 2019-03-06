@@ -1,7 +1,7 @@
 /**
  * 自分の注文ルーター
  */
-import * as cinerino from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as mongoose from 'mongoose';
 

@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * イベントルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
@@ -27,9 +27,9 @@ eventsRouter.use(authentication_1.default);
  */
 eventsRouter.get('/individualScreeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-            event: new sskts.repository.Event(mongoose.connection),
-            itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
+        yield cinerino.service.offer.findScreeningEventById4cinemasunshine(req.params.id)({
+            event: new cinerino.repository.Event(mongoose.connection),
+            itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
         }).then((event) => {
             res.json(event);
         });
@@ -48,12 +48,12 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const eventRepo = new sskts.repository.Event(mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
-            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: sskts.factory.sortType.Ascending } });
-        const events = yield sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
+            limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined, sort: (req.query.sort !== undefined) ? req.query.sort : { startDate: cinerino.factory.sortType.Ascending } });
+        const events = yield cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
             event: eventRepo,
             itemAvailability: itemAvailabilityRepo
         });
@@ -67,9 +67,9 @@ eventsRouter.get('/individualScreeningEvent', permitScopes_1.default(['aws.cogni
 }));
 eventsRouter.get('/screeningEvent/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'events', 'events.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        yield sskts.service.offer.findIndividualScreeningEventByIdentifier(req.params.id)({
-            event: new sskts.repository.Event(mongoose.connection),
-            itemAvailability: new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient())
+        yield cinerino.service.offer.findScreeningEventById4cinemasunshine(req.params.id)({
+            event: new cinerino.repository.Event(mongoose.connection),
+            itemAvailability: new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient())
         }).then((event) => {
             res.json(event);
         });
@@ -85,12 +85,12 @@ eventsRouter.get('/screeningEvent', permitScopes_1.default(['aws.cognito.signin.
     check_1.query('endThrough').optional().isISO8601().toDate()
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const eventRepo = new sskts.repository.Event(mongoose.connection);
-        const itemAvailabilityRepo = new sskts.repository.itemAvailability.ScreeningEvent(redis.getClient());
+        const eventRepo = new cinerino.repository.Event(mongoose.connection);
+        const itemAvailabilityRepo = new cinerino.repository.itemAvailability.ScreeningEvent(redis.getClient());
         const searchConditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : undefined, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : undefined });
-        const events = yield sskts.service.offer.searchIndividualScreeningEvents(searchConditions)({
+        const events = yield cinerino.service.offer.searchScreeningEvents4cinemasunshine(searchConditions)({
             event: eventRepo,
             itemAvailability: itemAvailabilityRepo
         });
