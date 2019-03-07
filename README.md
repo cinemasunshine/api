@@ -75,6 +75,8 @@ npm start
 | `DEVELOPER_LINE_NOTIFY_ACCESS_TOKEN`                 | true                  |             | 開発者LINE通知アクセストークン             |
 | `LINE_NOTIFY_URL`                                    | true                  |             | https://notify-api.line.me/api/notify      |
 | `USE_IN_MEMORY_OFFER_REPO`                           | false                 |             | インメモリオファーリポジトリ使用フラグ     |
+| `OWNERSHIP_INFO_UUID_DISABLED`                       | false                 |             | 所有権UUID使用無効化フラグ                 |
+| `CHEVRE_ENDPOINT`                                    | false                 |             | Chevre API Endpoint                        |
 
 ## tslint
 
