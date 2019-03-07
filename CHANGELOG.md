@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Added
 
+- 注文取引レポートダウンロードを追加
+
 ### Changed
 
 - serviceを完全にCinerino化

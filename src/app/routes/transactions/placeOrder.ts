@@ -910,10 +910,22 @@ placeOrderTransactionsRouter.get(
     '',
     permitScopes(['admin']),
     ...[
-        query('startFrom').optional().isISO8601().toDate(),
-        query('startThrough').optional().isISO8601().toDate(),
-        query('endFrom').optional().isISO8601().toDate(),
-        query('endThrough').optional().isISO8601().toDate()
+        query('startFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('startThrough')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endFrom')
+            .optional()
+            .isISO8601()
+            .toDate(),
+        query('endThrough')
+            .optional()
+            .isISO8601()
+            .toDate()
     ],
     validator,
     async (req, res, next) => {
@@ -923,7 +935,8 @@ placeOrderTransactionsRouter.get(
                 ...req.query,
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100,
-                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1
+                page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1,
+                typeOf: cinerino.factory.transactionType.PlaceOrder
             };
             const transactions = await transactionRepo.search(searchConditions);
             const totalCount = await transactionRepo.count(searchConditions);
@@ -953,6 +966,47 @@ placeOrderTransactionsRouter.get(
                 sort: req.query.sort
             });
             res.json(actions);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
+/**
+ * 取引レポート
+ */
+placeOrderTransactionsRouter.get(
+    '/report',
+    permitScopes(['admin']),
+    validator,
+    async (req, res, next) => {
+        try {
+            const transactionRepo = new cinerino.repository.Transaction(mongoose.connection);
+            const searchConditions: cinerino.factory.transaction.ISearchConditions<cinerino.factory.transactionType.PlaceOrder> = {
+                limit: undefined,
+                page: undefined,
+                typeOf: cinerino.factory.transactionType.PlaceOrder,
+                ids: (Array.isArray(req.query.ids)) ? req.query.ids : undefined,
+                statuses: (Array.isArray(req.query.statuses)) ? req.query.statuses : undefined,
+                startFrom: (req.query.startFrom !== undefined) ? moment(req.query.startFrom)
+                    .toDate() : undefined,
+                startThrough: (req.query.startThrough !== undefined) ? moment(req.query.startThrough)
+                    .toDate() : undefined,
+                endFrom: (req.query.endFrom !== undefined) ? moment(req.query.endFrom)
+                    .toDate() : undefined,
+                endThrough: (req.query.endThrough !== undefined) ? moment(req.query.endThrough)
+                    .toDate() : undefined,
+                agent: req.query.agent,
+                seller: req.query.seller,
+                object: req.query.object,
+                result: req.query.result
+            };
+            const stream = await cinerino.service.report.transaction.download({
+                conditions: searchConditions,
+                format: req.query.format
+            })({ transaction: transactionRepo });
+            res.type(`${req.query.format}; charset=utf-8`);
+            stream.pipe(res);
         } catch (error) {
             next(error);
         }
