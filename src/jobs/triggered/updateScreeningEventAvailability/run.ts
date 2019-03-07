@@ -12,16 +12,6 @@ import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('cinerino-api:jobs');
 
-let holdSingletonProcess = false;
-setInterval(
-    async () => {
-        // tslint:disable-next-line:no-magic-numbers
-        holdSingletonProcess = await singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
-    },
-    // tslint:disable-next-line:no-magic-numbers
-    10000
-);
-
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -31,6 +21,16 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     : 1;
 
 export default async () => {
+    let holdSingletonProcess = false;
+    setInterval(
+        async () => {
+            // tslint:disable-next-line:no-magic-numbers
+            holdSingletonProcess = await singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        10000
+    );
+
     const connection = await connectMongo({ defaultConnection: false });
 
     const redisClient = cinerino.redis.createClient({

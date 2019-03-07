@@ -19,13 +19,6 @@ const moment = require("moment");
 const connectMongo_1 = require("../../../connectMongo");
 const singletonProcess = require("../../../singletonProcess");
 const debug = createDebug('cinerino-api:jobs');
-let holdSingletonProcess = false;
-setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    // tslint:disable-next-line:no-magic-numbers
-    holdSingletonProcess = yield singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
-}), 
-// tslint:disable-next-line:no-magic-numbers
-10000);
 /**
  * 上映イベントを何週間後までインポートするか
  */
@@ -34,6 +27,13 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
+    let holdSingletonProcess = false;
+    setInterval(() => __awaiter(this, void 0, void 0, function* () {
+        // tslint:disable-next-line:no-magic-numbers
+        holdSingletonProcess = yield singletonProcess.lock({ key: 'updateScreeningEventAvailability', ttl: 60 });
+    }), 
+    // tslint:disable-next-line:no-magic-numbers
+    10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const redisClient = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,

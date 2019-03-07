@@ -25,14 +25,14 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     // tslint:disable-next-line:no-magic-numbers
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
-let holdSingletonProcess = false;
-setInterval(() => __awaiter(this, void 0, void 0, function* () {
-    // tslint:disable-next-line:no-magic-numbers
-    holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
-}), 
-// tslint:disable-next-line:no-magic-numbers
-10000);
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
+    let holdSingletonProcess = false;
+    setInterval(() => __awaiter(this, void 0, void 0, function* () {
+        // tslint:disable-next-line:no-magic-numbers
+        holdSingletonProcess = yield singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+    }), 
+    // tslint:disable-next-line:no-magic-numbers
+    10000);
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     const job = new cron_1.CronJob('*/30 * * * *', () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {

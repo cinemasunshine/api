@@ -10,17 +10,17 @@ import * as singletonProcess from '../../../singletonProcess';
 
 const debug = createDebug('cinerino-api:jobs');
 
-let holdSingletonProcess = false;
-setInterval(
-    async () => {
-        // tslint:disable-next-line:no-magic-numbers
-        holdSingletonProcess = await singletonProcess.lock({ key: 'importMovieTheaters', ttl: 60 });
-    },
-    // tslint:disable-next-line:no-magic-numbers
-    10000
-);
-
 export default async () => {
+    let holdSingletonProcess = false;
+    setInterval(
+        async () => {
+            // tslint:disable-next-line:no-magic-numbers
+            holdSingletonProcess = await singletonProcess.lock({ key: 'importMovieTheaters', ttl: 60 });
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        10000
+    );
+
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(
