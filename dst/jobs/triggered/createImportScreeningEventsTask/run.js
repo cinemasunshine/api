@@ -38,13 +38,19 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         if (!holdSingletonProcess) {
             return;
         }
-        const now = new Date();
         const placeRepo = new cinerino.repository.Place(connection);
         const sellerRepo = new cinerino.repository.Seller(connection);
         const taskRepo = new cinerino.repository.Task(connection);
         // 全劇場組織を取得
         const sellers = yield sellerRepo.search({});
         const movieTheaters = yield placeRepo.searchMovieTheaters({});
+        const now = new Date();
+        const importFrom = moment(now)
+            .add(0, 'weeks')
+            .toDate();
+        const importThrough = moment(importFrom)
+            .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+            .toDate();
         yield Promise.all(movieTheaters.map((movieTheater) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const branchCode = movieTheater.branchCode;
@@ -54,27 +60,25 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
                         && m.location.branchCode === branchCode;
                 });
                 if (seller !== undefined) {
-                    const importFrom = moment(now)
-                        .add(0, 'weeks')
-                        .toDate();
-                    const importThrough = moment(importFrom)
-                        .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
-                        .toDate();
-                    const taskAttributes = {
-                        name: cinerino.factory.taskName.ImportScreeningEvents,
-                        status: cinerino.factory.taskStatus.Ready,
-                        runsAt: now,
-                        remainingNumberOfTries: 1,
-                        numberOfTried: 0,
-                        executionResults: [],
-                        data: {
-                            locationBranchCode: branchCode,
-                            importFrom: importFrom,
-                            importThrough: importThrough
-                        }
-                    };
-                    yield taskRepo.save(taskAttributes);
-                    debug('task saved', movieTheater.branchCode);
+                    if (Array.isArray(seller.makesOffer)) {
+                        yield Promise.all(seller.makesOffer.map((offer) => __awaiter(this, void 0, void 0, function* () {
+                            const taskAttributes = {
+                                name: cinerino.factory.taskName.ImportScreeningEvents,
+                                status: cinerino.factory.taskStatus.Ready,
+                                runsAt: now,
+                                remainingNumberOfTries: 1,
+                                numberOfTried: 0,
+                                executionResults: [],
+                                data: {
+                                    locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                    offeredThrough: offer.offeredThrough,
+                                    importFrom: importFrom,
+                                    importThrough: importThrough
+                                }
+                            };
+                            yield taskRepo.save(taskAttributes);
+                        })));
+                    }
                 }
             }
             catch (error) {
