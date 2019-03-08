@@ -1,7 +1,7 @@
 /**
  * ポイント口座ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 // import * as createDebug from 'debug';
 import { Router } from 'express';
 import { NO_CONTENT } from 'http-status';
@@ -12,8 +12,8 @@ import validator from '../middlewares/validator';
 
 const accountsRouter = Router();
 
-// const debug = createDebug('sskts-api:routes:accounts');
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+// const debug = createDebug('cinerino-api:routes:accounts');
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
@@ -38,11 +38,11 @@ accountsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
+            const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            await sskts.service.account.deposit({
+            await cinerino.service.account.deposit({
                 toAccountNumber: req.body.toAccountNumber,
                 agent: {
                     id: req.user.sub,

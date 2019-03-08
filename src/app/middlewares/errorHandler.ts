@@ -4,7 +4,7 @@
  * @module middlewares.errorHandler
  */
 
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 import {
@@ -21,11 +21,11 @@ import {
 import { APIError } from '../error/api';
 // import logger from '../logger';
 
-const debug = createDebug('sskts-api:middlewares:errorHandler');
+const debug = createDebug('cinerino-api:middlewares:errorHandler');
 
 export default (err: any, __: Request, res: Response, next: NextFunction) => {
     debug(err);
-    // logger.error('sskts-api:middleware:errorHandler', err);
+    // logger.error('cinerino-api:middleware:errorHandler', err);
 
     if (res.headersSent) {
         next(err);
@@ -39,12 +39,12 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
     } else {
         // エラー配列が入ってくることもある
         if (Array.isArray(err)) {
-            apiError = new APIError(ssktsError2httpStatusCode(err[0]), err);
-        } else if (err instanceof sskts.factory.errors.Cinerino) {
-            apiError = new APIError(ssktsError2httpStatusCode(err), [err]);
+            apiError = new APIError(cinerinoError2httpStatusCode(err[0]), err);
+        } else if (err instanceof cinerino.factory.errors.Cinerino) {
+            apiError = new APIError(cinerinoError2httpStatusCode(err), [err]);
         } else {
             // 500
-            apiError = new APIError(INTERNAL_SERVER_ERROR, [new sskts.factory.errors.Cinerino(<any>'InternalServerError', err.message)]);
+            apiError = new APIError(INTERNAL_SERVER_ERROR, [new cinerino.factory.errors.Cinerino(<any>'InternalServerError', err.message)]);
         }
     }
 
@@ -57,42 +57,42 @@ export default (err: any, __: Request, res: Response, next: NextFunction) => {
  * CinerinoエラーをHTTPステータスコードへ変換する
  * @param err Cinerinoエラー
  */
-function ssktsError2httpStatusCode(err: sskts.factory.errors.Cinerino) {
+function cinerinoError2httpStatusCode(err: cinerino.factory.errors.Cinerino) {
     let statusCode = BAD_REQUEST;
 
     switch (true) {
         // 401
-        case (err instanceof sskts.factory.errors.Unauthorized):
+        case (err instanceof cinerino.factory.errors.Unauthorized):
             statusCode = UNAUTHORIZED;
             break;
 
         // 403
-        case (err instanceof sskts.factory.errors.Forbidden):
+        case (err instanceof cinerino.factory.errors.Forbidden):
             statusCode = FORBIDDEN;
             break;
 
         // 404
-        case (err instanceof sskts.factory.errors.NotFound):
+        case (err instanceof cinerino.factory.errors.NotFound):
             statusCode = NOT_FOUND;
             break;
 
         // 409
-        case (err instanceof sskts.factory.errors.AlreadyInUse):
+        case (err instanceof cinerino.factory.errors.AlreadyInUse):
             statusCode = CONFLICT;
             break;
 
         // 429
-        case (err instanceof sskts.factory.errors.RateLimitExceeded):
+        case (err instanceof cinerino.factory.errors.RateLimitExceeded):
             statusCode = TOO_MANY_REQUESTS;
             break;
 
         // 502
-        case (err instanceof sskts.factory.errors.NotImplemented):
+        case (err instanceof cinerino.factory.errors.NotImplemented):
             statusCode = NOT_IMPLEMENTED;
             break;
 
         // 503
-        case (err instanceof sskts.factory.errors.ServiceUnavailable):
+        case (err instanceof cinerino.factory.errors.ServiceUnavailable):
             statusCode = SERVICE_UNAVAILABLE;
             break;
 

@@ -11,7 +11,7 @@ import { OK } from 'http-status';
 
 import * as redis from '../../redis';
 
-const debug = createDebug('sskts-api:healthRouter');
+const debug = createDebug('cinerino-api:healthRouter');
 // 接続確認をあきらめる時間(ミリ秒)
 const TIMEOUT_GIVE_UP_CHECKING_IN_MILLISECONDS = 3000;
 

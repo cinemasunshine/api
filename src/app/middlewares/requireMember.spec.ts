@@ -5,7 +5,7 @@
  * @ignore
  */
 
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as assert from 'assert';
 import * as nock from 'nock';
 import * as sinon from 'sinon';
@@ -48,7 +48,7 @@ describe('requireMember.default()', () => {
             next: () => undefined
         };
 
-        sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(sskts.factory.errors.Forbidden));
+        sandbox.mock(params).expects('next').once().withExactArgs(sinon.match.instanceOf(cinerino.factory.errors.Forbidden));
 
         const result = await requireMember.default(<any>params.req, <any>params.res, params.next);
         assert.equal(result, undefined);

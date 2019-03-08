@@ -1,7 +1,7 @@
 /**
  * 自分の所有権ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import * as moment from 'moment';
 import * as mongoose from 'mongoose';
@@ -16,14 +16,14 @@ import creditCardsRouter from './ownershipInfos/creditCards';
 import reservationsRouter from './ownershipInfos/reservations';
 
 // const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
-// const chevreAuthClient = new sskts.chevre.auth.ClientCredentials({
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 //     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
 //     clientId: <string>process.env.CHEVRE_CLIENT_ID,
 //     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
 //     scopes: [],
 //     state: ''
 // });
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
@@ -44,10 +44,10 @@ ownershipInfosRouter.get(
     validator,
     async (req, res, next) => {
         try {
-            const query = <sskts.factory.ownershipInfo.ISearchConditions<any>>req.query;
+            const query = <cinerino.factory.ownershipInfo.ISearchConditions<any>>req.query;
             const typeOfGood = query.typeOfGood;
-            let ownershipInfos: sskts.factory.ownershipInfo.IOwnershipInfo<any>[];
-            const searchConditions: sskts.factory.ownershipInfo.ISearchConditions<any> = {
+            let ownershipInfos: cinerino.factory.ownershipInfo.IOwnershipInfo<any>[];
+            const searchConditions: cinerino.factory.ownershipInfo.ISearchConditions<any> = {
                 // tslint:disable-next-line:no-magic-numbers
                 limit: (query.limit !== undefined) ? Math.min(query.limit, 100) : 100,
                 page: (query.page !== undefined) ? Math.max(query.page, 1) : 1,
@@ -60,13 +60,13 @@ ownershipInfosRouter.get(
                 typeOfGood: typeOfGood
             };
 
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             const totalCount = await ownershipInfoRepo.count(searchConditions);
             ownershipInfos = await ownershipInfoRepo.search(searchConditions);
 
             switch (searchConditions.typeOfGood.typeOf) {
-                case sskts.factory.ownershipInfo.AccountGoodType.Account:
-                    const accountService = new sskts.pecorinoapi.service.Account({
+                case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+                    const accountService = new cinerino.pecorinoapi.service.Account({
                         endpoint: <string>process.env.PECORINO_ENDPOINT,
                         auth: pecorinoAuthClient
                     });
@@ -80,7 +80,7 @@ ownershipInfosRouter.get(
                     ownershipInfos = ownershipInfos.map((o) => {
                         const account = accounts.find((a) => a.accountNumber === o.typeOfGood.accountNumber);
                         if (account === undefined) {
-                            throw new sskts.factory.errors.NotFound('Account');
+                            throw new cinerino.factory.errors.NotFound('Account');
                         }
 
                         return { ...o, typeOfGood: account };
@@ -88,7 +88,7 @@ ownershipInfosRouter.get(
 
                     break;
 
-                case sskts.factory.chevre.reservationType.EventReservation:
+                case cinerino.factory.chevre.reservationType.EventReservation:
                     // typeOfGoodに予約内容がすべて含まれているので、外部サービスに問い合わせ不要
                     // const reservationService = new cinerino.chevre.service.Reservation({
                     //     endpoint: <string>process.env.CHEVRE_ENDPOINT,
@@ -104,7 +104,7 @@ ownershipInfosRouter.get(
 
                 default:
                 // no op
-                // throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+                // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
             }
 
             res.set('X-Total-Count', totalCount.toString());

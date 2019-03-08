@@ -2,7 +2,7 @@
 /**
  * エラーハンドラーミドルウェアテスト
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as assert from 'assert';
 import { INTERNAL_SERVER_ERROR } from 'http-status';
 import * as nock from 'nock';
@@ -77,12 +77,12 @@ describe('errorHandler.default()', () => {
 
     // tslint:disable-next-line:mocha-no-side-effect-code
     [
-        new sskts.factory.errors.Argument(''),
-        new sskts.factory.errors.Unauthorized(),
-        new sskts.factory.errors.Forbidden(),
-        new sskts.factory.errors.NotFound(''),
-        new sskts.factory.errors.AlreadyInUse('', []),
-        new sskts.factory.errors.ServiceUnavailable()
+        new cinerino.factory.errors.Argument(''),
+        new cinerino.factory.errors.Unauthorized(),
+        new cinerino.factory.errors.Forbidden(),
+        new cinerino.factory.errors.NotFound(''),
+        new cinerino.factory.errors.AlreadyInUse('', []),
+        new cinerino.factory.errors.ServiceUnavailable()
     ].forEach((err) => {
         it(`CinerinoErrorと共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
             const params = {
@@ -122,14 +122,14 @@ describe('errorHandler.default()', () => {
 
     // tslint:disable-next-line:mocha-no-side-effect-code
     [
-        new sskts.factory.errors.Argument(''),
-        new sskts.factory.errors.Unauthorized(),
-        new sskts.factory.errors.Forbidden(),
-        new sskts.factory.errors.NotFound(''),
-        new sskts.factory.errors.AlreadyInUse('', []),
-        new sskts.factory.errors.RateLimitExceeded(),
-        new sskts.factory.errors.NotImplemented(),
-        new sskts.factory.errors.ServiceUnavailable()
+        new cinerino.factory.errors.Argument(''),
+        new cinerino.factory.errors.Unauthorized(),
+        new cinerino.factory.errors.Forbidden(),
+        new cinerino.factory.errors.NotFound(''),
+        new cinerino.factory.errors.AlreadyInUse('', []),
+        new cinerino.factory.errors.RateLimitExceeded(),
+        new cinerino.factory.errors.NotImplemented(),
+        new cinerino.factory.errors.ServiceUnavailable()
     ].forEach((err) => {
         it(`CinerinoError配列と共に呼ばれればAPIErrorが生成されてjson出力されるはず ${err.reason}`, async () => {
             const params = {

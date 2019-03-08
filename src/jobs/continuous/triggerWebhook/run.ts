@@ -1,7 +1,7 @@
 /**
  * Webhookをたたく
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -12,7 +12,7 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 100;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -23,8 +23,8 @@ export default async () => {
             count += 1;
 
             try {
-                await sskts.service.task.executeByName(
-                    sskts.factory.taskName.TriggerWebhook
+                await cinerino.service.task.executeByName(
+                    cinerino.factory.taskName.TriggerWebhook
                 )({
                     taskRepo: taskRepo,
                     connection: connection

@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * oauthミドルウェア
  * @see https://aws.amazon.com/blogs/mobile/integrating-amazon-cognito-user-pools-with-api-gateway/
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_middleware_1 = require("@motionpicture/express-middleware");
 // 許可発行者リスト
 const ISSUERS = process.env.TOKEN_ISSUERS.split(',');
@@ -63,7 +63,7 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                 req.user = user;
                 req.accessToken = token;
                 req.agent = {
-                    typeOf: sskts.factory.personType.Person,
+                    typeOf: cinerino.factory.personType.Person,
                     id: user.sub,
                     memberOf: programMembership,
                     identifier: identifier
@@ -71,11 +71,11 @@ exports.default = (req, res, next) => __awaiter(this, void 0, void 0, function* 
                 next();
             }),
             unauthorizedHandler: (err) => {
-                next(new sskts.factory.errors.Unauthorized(err.message));
+                next(new cinerino.factory.errors.Unauthorized(err.message));
             }
         })(req, res, next);
     }
     catch (error) {
-        next(new sskts.factory.errors.Unauthorized(error.message));
+        next(new cinerino.factory.errors.Unauthorized(error.message));
     }
 });

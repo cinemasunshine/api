@@ -1,26 +1,26 @@
 /**
  * 劇場インポート
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
-const debug = createDebug('sskts-api:jobs');
-
-let holdSingletonProcess = false;
-setInterval(
-    async () => {
-        // tslint:disable-next-line:no-magic-numbers
-        holdSingletonProcess = await singletonProcess.lock({ key: 'importMovieTheaters', ttl: 60 });
-    },
-    // tslint:disable-next-line:no-magic-numbers
-    10000
-);
+const debug = createDebug('cinerino-api:jobs');
 
 export default async () => {
+    let holdSingletonProcess = false;
+    setInterval(
+        async () => {
+            // tslint:disable-next-line:no-magic-numbers
+            holdSingletonProcess = await singletonProcess.lock({ key: 'importMovieTheaters', ttl: 60 });
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        10000
+    );
+
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(
@@ -30,8 +30,8 @@ export default async () => {
                 return;
             }
 
-            const sellerRepo = new sskts.repository.Seller(connection);
-            const placeRepo = new sskts.repository.Place(connection);
+            const sellerRepo = new cinerino.repository.Seller(connection);
+            const placeRepo = new cinerino.repository.Place(connection);
 
             // 全劇場組織を取得
             const sellers = await sellerRepo.search({});
@@ -41,7 +41,7 @@ export default async () => {
                     try {
                         const branchCode = seller.location.branchCode;
                         debug('importing movieTheater...', branchCode);
-                        await sskts.service.masterSync.importMovieTheater(branchCode)({
+                        await cinerino.service.masterSync.importMovieTheater(branchCode)({
                             seller: sellerRepo,
                             place: placeRepo
                         });

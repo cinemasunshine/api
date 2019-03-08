@@ -1,14 +1,14 @@
 /**
  * 注文配送
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
 export default async () => {
     const connection = await connectMongo({ defaultConnection: false });
 
-    const redisClient = sskts.redis.createClient({
+    const redisClient = cinerino.redis.createClient({
         host: <string>process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(<string>process.env.REDIS_PORT, 10),
@@ -20,7 +20,7 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -31,8 +31,8 @@ export default async () => {
             count += 1;
 
             try {
-                await sskts.service.task.executeByName(
-                    sskts.factory.taskName.SendOrder
+                await cinerino.service.task.executeByName(
+                    cinerino.factory.taskName.SendOrder
                 )({
                     taskRepo: taskRepo,
                     connection: connection,

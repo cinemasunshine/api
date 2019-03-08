@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 自分の所有権ルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -22,14 +22,14 @@ const accounts_1 = require("./ownershipInfos/accounts");
 const creditCards_1 = require("./ownershipInfos/creditCards");
 const reservations_1 = require("./ownershipInfos/reservations");
 // const CODE_EXPIRES_IN_SECONDS = Number(process.env.CODE_EXPIRES_IN_SECONDS);
-// const chevreAuthClient = new sskts.chevre.auth.ClientCredentials({
+// const chevreAuthClient = new cinerino.chevre.auth.ClientCredentials({
 //     domain: <string>process.env.CHEVRE_AUTHORIZE_SERVER_DOMAIN,
 //     clientId: <string>process.env.CHEVRE_CLIENT_ID,
 //     clientSecret: <string>process.env.CHEVRE_CLIENT_SECRET,
 //     scopes: [],
 //     state: ''
 // });
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.PECORINO_CLIENT_ID,
     clientSecret: process.env.PECORINO_CLIENT_SECRET,
@@ -60,12 +60,12 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                 .toDate() : undefined,
             typeOfGood: typeOfGood
         };
-        const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+        const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
         const totalCount = yield ownershipInfoRepo.count(searchConditions);
         ownershipInfos = yield ownershipInfoRepo.search(searchConditions);
         switch (searchConditions.typeOfGood.typeOf) {
-            case sskts.factory.ownershipInfo.AccountGoodType.Account:
-                const accountService = new sskts.pecorinoapi.service.Account({
+            case cinerino.factory.ownershipInfo.AccountGoodType.Account:
+                const accountService = new cinerino.pecorinoapi.service.Account({
                     endpoint: process.env.PECORINO_ENDPOINT,
                     auth: pecorinoAuthClient
                 });
@@ -78,12 +78,12 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                 ownershipInfos = ownershipInfos.map((o) => {
                     const account = accounts.find((a) => a.accountNumber === o.typeOfGood.accountNumber);
                     if (account === undefined) {
-                        throw new sskts.factory.errors.NotFound('Account');
+                        throw new cinerino.factory.errors.NotFound('Account');
                     }
                     return Object.assign({}, o, { typeOfGood: account });
                 });
                 break;
-            case sskts.factory.chevre.reservationType.EventReservation:
+            case cinerino.factory.chevre.reservationType.EventReservation:
                 // typeOfGoodに予約内容がすべて含まれているので、外部サービスに問い合わせ不要
                 // const reservationService = new cinerino.chevre.service.Reservation({
                 //     endpoint: <string>process.env.CHEVRE_ENDPOINT,
@@ -98,7 +98,7 @@ ownershipInfosRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.ad
                 break;
             default:
             // no op
-            // throw new sskts.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
+            // throw new cinerino.factory.errors.Argument('typeOfGood.typeOf', 'Unknown good type');
         }
         res.set('X-Total-Count', totalCount.toString());
         res.json(ownershipInfos);

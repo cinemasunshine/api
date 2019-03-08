@@ -1,7 +1,7 @@
 /**
  * 自分のクレジットカードルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
@@ -11,7 +11,7 @@ import validator from '../../../../middlewares/validator';
 
 const creditCardsRouter = Router();
 
-const debug = createDebug('sskts-api:router');
+const debug = createDebug('cinerino-api:router');
 
 /**
  * 会員クレジットカード追加
@@ -25,7 +25,7 @@ creditCardsRouter.post(
     validator,
     async (req, res, next) => {
         try {
-            const creditCard = await sskts.service.person.creditCard.save(<string>req.user.username, req.body)();
+            const creditCard = await cinerino.service.person.creditCard.save(<string>req.user.username, req.body)();
             res.status(CREATED)
                 .json(creditCard);
         } catch (error) {
@@ -41,7 +41,7 @@ creditCardsRouter.get(
     permitScopes(['aws.cognito.signin.user.admin']),
     async (req, res, next) => {
         try {
-            const searchCardResults = await sskts.service.person.creditCard.find(<string>req.user.username)();
+            const searchCardResults = await cinerino.service.person.creditCard.find(<string>req.user.username)();
             debug('searchCardResults:', searchCardResults);
             res.json(searchCardResults);
         } catch (error) {
@@ -58,7 +58,7 @@ creditCardsRouter.delete(
     validator,
     async (req, res, next) => {
         try {
-            await sskts.service.person.creditCard.unsubscribe(<string>req.user.username, req.params.cardSeq)();
+            await cinerino.service.person.creditCard.unsubscribe(<string>req.user.username, req.params.cardSeq)();
             res.status(NO_CONTENT)
                 .end();
         } catch (error) {

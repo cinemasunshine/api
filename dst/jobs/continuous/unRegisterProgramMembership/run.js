@@ -11,18 +11,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 会員プログラム登録解除タスク
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
-    const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
+    const taskRepo = new cinerino.repository.Task(connection);
+    const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
         apiVersion: 'latest',
         region: 'ap-northeast-1',
-        credentials: new sskts.AWS.Credentials({
+        credentials: new cinerino.AWS.Credentials({
             accessKeyId: process.env.AWS_ACCESS_KEY_ID,
             secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
         })
@@ -33,7 +33,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield sskts.service.task.executeByName(sskts.factory.taskName.UnRegisterProgramMembership)({
+            yield cinerino.service.task.executeByName(cinerino.factory.taskName.UnRegisterProgramMembership)({
                 taskRepo: taskRepo,
                 connection: connection,
                 cognitoIdentityServiceProvider: cognitoIdentityServiceProvider

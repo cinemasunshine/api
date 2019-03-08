@@ -11,15 +11,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Cognitoユーザープールルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
-const cognitoIdentityServiceProvider = new sskts.AWS.CognitoIdentityServiceProvider({
+const cognitoIdentityServiceProvider = new cinerino.AWS.CognitoIdentityServiceProvider({
     apiVersion: 'latest',
     region: 'ap-northeast-1',
-    credentials: new sskts.AWS.Credentials({
+    credentials: new cinerino.AWS.Credentials({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     })
@@ -37,7 +37,7 @@ userPoolsRouter.get('/:userPoolId', permitScopes_1.default(['admin']), validator
                 }
                 else {
                     if (data.UserPool === undefined) {
-                        reject(new sskts.factory.errors.NotFound('UserPool'));
+                        reject(new cinerino.factory.errors.NotFound('UserPool'));
                     }
                     else {
                         resolve(data.UserPool);
@@ -64,7 +64,7 @@ userPoolsRouter.get('/:userPoolId/clients', permitScopes_1.default(['admin']), v
                 }
                 else {
                     if (data.UserPoolClients === undefined) {
-                        reject(new sskts.factory.errors.NotFound('UserPoolClients'));
+                        reject(new cinerino.factory.errors.NotFound('UserPoolClients'));
                     }
                     else {
                         resolve(data.UserPoolClients);
@@ -91,7 +91,7 @@ userPoolsRouter.get('/:userPoolId/clients/:clientId', permitScopes_1.default(['a
                 }
                 else {
                     if (data.UserPoolClient === undefined) {
-                        reject(new sskts.factory.errors.NotFound('UserPoolClient'));
+                        reject(new cinerino.factory.errors.NotFound('UserPoolClient'));
                     }
                     else {
                         resolve(data.UserPoolClient);

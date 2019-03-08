@@ -5,7 +5,7 @@ import * as createDebug from 'debug';
 
 import * as redis from './redis';
 
-const debug = createDebug('sskts-api:singletonProcess');
+const debug = createDebug('cinerino-api:singletonProcess');
 
 /**
  * Signletonプロセスをロックする

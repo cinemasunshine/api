@@ -1,7 +1,7 @@
 /**
  * 予約確定
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 
 import { connectMongo } from '../../../connectMongo';
 
@@ -12,7 +12,7 @@ export default async () => {
 
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
 
     setInterval(
         async () => {
@@ -23,11 +23,13 @@ export default async () => {
             count += 1;
 
             try {
-                await sskts.service.task.executeByName(
-                    sskts.factory.taskName.ConfirmReservation
+                await cinerino.service.task.executeByName(
+                    cinerino.factory.taskName.ConfirmReservation
                 )({
                     taskRepo: taskRepo,
-                    connection: connection
+                    connection: connection,
+                    chevreEndpoint: <string>process.env.CHEVRE_ENDPOINT,
+                    chevreAuthClient: <any>{}
                 });
             } catch (error) {
                 // tslint:disable-next-line:no-console

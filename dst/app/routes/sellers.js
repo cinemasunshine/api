@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 販売者ルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const express_1 = require("express");
 // tslint:disable-next-line:no-submodule-imports
 const check_1 = require("express-validator/check");
@@ -87,7 +87,7 @@ sellersRouter.post('', permitScopes_1.default(['admin', 'sellers']), ...[
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attributes = req.body;
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.save({ attributes: attributes });
         res.status(http_status_1.CREATED)
             .json(seller);
@@ -104,7 +104,7 @@ sellersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', '
         const searchCoinditions = Object.assign({}, req.query, { 
             // tslint:disable-next-line:no-magic-numbers
             limit: (req.query.limit !== undefined) ? Math.min(req.query.limit, 100) : 100, page: (req.query.page !== undefined) ? Math.max(req.query.page, 1) : 1 });
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const sellers = yield sellerRepo.search(searchCoinditions);
         const totalCount = yield sellerRepo.count(searchCoinditions);
         res.set('X-Total-Count', totalCount.toString());
@@ -119,7 +119,7 @@ sellersRouter.get('', permitScopes_1.default(['aws.cognito.signin.user.admin', '
  */
 sellersRouter.get('/:id', permitScopes_1.default(['aws.cognito.signin.user.admin', 'sellers', 'sellers.read-only']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         const seller = yield sellerRepo.findById({
             id: req.params.id
         });
@@ -194,7 +194,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
 ], validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
         const attributes = req.body;
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.save({ id: req.params.id, attributes: attributes });
         res.status(http_status_1.NO_CONTENT)
             .end();
@@ -208,7 +208,7 @@ sellersRouter.put('/:id', permitScopes_1.default(['admin', 'sellers']), ...[
  */
 sellersRouter.delete('/:id', permitScopes_1.default(['admin', 'sellers']), validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const sellerRepo = new sskts.repository.Seller(mongoose.connection);
+        const sellerRepo = new cinerino.repository.Seller(mongoose.connection);
         yield sellerRepo.deleteById({
             id: req.params.id
         });

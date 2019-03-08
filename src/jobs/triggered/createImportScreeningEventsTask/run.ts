@@ -1,7 +1,7 @@
 /**
  * 上映イベントインポートタスク作成
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { CronJob } from 'cron';
 import * as createDebug from 'debug';
 import * as moment from 'moment';
@@ -9,7 +9,7 @@ import * as moment from 'moment';
 import { connectMongo } from '../../../connectMongo';
 import * as singletonProcess from '../../../singletonProcess';
 
-const debug = createDebug('sskts-api:jobs');
+const debug = createDebug('cinerino-api:jobs');
 
 /**
  * 上映イベントを何週間後までインポートするか
@@ -19,17 +19,17 @@ const LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS = (process.env.LENGTH_IMPORT_SCREE
     ? parseInt(process.env.LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 10)
     : 1;
 
-let holdSingletonProcess = false;
-setInterval(
-    async () => {
-        // tslint:disable-next-line:no-magic-numbers
-        holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
-    },
-    // tslint:disable-next-line:no-magic-numbers
-    10000
-);
-
 export default async () => {
+    let holdSingletonProcess = false;
+    setInterval(
+        async () => {
+            // tslint:disable-next-line:no-magic-numbers
+            holdSingletonProcess = await singletonProcess.lock({ key: 'createImportScreeningEventsTask', ttl: 60 });
+        },
+        // tslint:disable-next-line:no-magic-numbers
+        10000
+    );
+
     const connection = await connectMongo({ defaultConnection: false });
 
     const job = new CronJob(
@@ -39,15 +39,21 @@ export default async () => {
                 return;
             }
 
-            const now = new Date();
-
-            const placeRepo = new sskts.repository.Place(connection);
-            const sellerRepo = new sskts.repository.Seller(connection);
-            const taskRepo = new sskts.repository.Task(connection);
+            const placeRepo = new cinerino.repository.Place(connection);
+            const sellerRepo = new cinerino.repository.Seller(connection);
+            const taskRepo = new cinerino.repository.Task(connection);
 
             // 全劇場組織を取得
             const sellers = await sellerRepo.search({});
             const movieTheaters = await placeRepo.searchMovieTheaters({});
+
+            const now = new Date();
+            const importFrom = moment(now)
+                .add(0, 'weeks')
+                .toDate();
+            const importThrough = moment(importFrom)
+                .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
+                .toDate();
 
             await Promise.all(movieTheaters.map(async (movieTheater) => {
                 try {
@@ -59,27 +65,25 @@ export default async () => {
                     });
 
                     if (seller !== undefined) {
-                        const importFrom = moment(now)
-                            .add(0, 'weeks')
-                            .toDate();
-                        const importThrough = moment(importFrom)
-                            .add(LENGTH_IMPORT_SCREENING_EVENTS_IN_WEEKS, 'weeks')
-                            .toDate();
-                        const taskAttributes: sskts.factory.task.IAttributes<sskts.factory.taskName.ImportScreeningEvents> = {
-                            name: sskts.factory.taskName.ImportScreeningEvents,
-                            status: sskts.factory.taskStatus.Ready,
-                            runsAt: now,
-                            remainingNumberOfTries: 1,
-                            numberOfTried: 0,
-                            executionResults: [],
-                            data: {
-                                locationBranchCode: branchCode,
-                                importFrom: importFrom,
-                                importThrough: importThrough
-                            }
-                        };
-                        await taskRepo.save(taskAttributes);
-                        debug('task saved', movieTheater.branchCode);
+                        if (Array.isArray(seller.makesOffer)) {
+                            await Promise.all(seller.makesOffer.map(async (offer) => {
+                                const taskAttributes: cinerino.factory.task.IAttributes<cinerino.factory.taskName.ImportScreeningEvents> = {
+                                    name: cinerino.factory.taskName.ImportScreeningEvents,
+                                    status: cinerino.factory.taskStatus.Ready,
+                                    runsAt: now,
+                                    remainingNumberOfTries: 1,
+                                    numberOfTried: 0,
+                                    executionResults: [],
+                                    data: {
+                                        locationBranchCode: offer.itemOffered.reservationFor.location.branchCode,
+                                        offeredThrough: offer.offeredThrough,
+                                        importFrom: importFrom,
+                                        importThrough: importThrough
+                                    }
+                                };
+                                await taskRepo.save(taskAttributes);
+                            }));
+                        }
                     }
                 } catch (error) {
                     // tslint:disable-next-line:no-console

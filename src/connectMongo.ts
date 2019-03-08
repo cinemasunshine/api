@@ -1,11 +1,11 @@
 /**
  * MongoDBコネクション確立
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import * as mongoose from 'mongoose';
 
-const debug = createDebug('sskts-api:connectMongo');
+const debug = createDebug('cinerino-api:connectMongo');
 const PING_INTERVAL = 10000;
 const MONGOLAB_URI = <string>process.env.MONGOLAB_URI;
 
@@ -65,14 +65,14 @@ export async function connectMongo(params: {
                 await connection.close();
                 await connection.openUri(MONGOLAB_URI, undefined, undefined, connectOptions);
                 debug('MongoDB reconnected!');
-                await sskts.service.notification.report2developers(
+                await cinerino.service.notification.report2developers(
                     `[${process.env.PROJECT_ID}] api:connectMongo`,
                     'MongoDB connection reestablished!'
                 )();
             } catch (error) {
                 // tslint:disable-next-line:no-console
                 console.error('mongoose.connect:', error);
-                await sskts.service.notification.report2developers(
+                await cinerino.service.notification.report2developers(
                     `[${process.env.PROJECT_ID}] api:connectMongo`,
                     `MongoDB connection error: ${error.stack}`
                 )();

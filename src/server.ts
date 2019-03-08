@@ -9,7 +9,7 @@ import * as http from 'http';
 import * as app from './app/app';
 import runJobs from './jobs/run';
 
-const debug = createDebug('sskts-api:server');
+const debug = createDebug('cinerino-api:server');
 
 if (process.env.JOBS_STOPPED !== '1') {
     runJobs()

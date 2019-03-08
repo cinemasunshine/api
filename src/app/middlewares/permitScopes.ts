@@ -3,11 +3,11 @@
  * @module middlewares.permitScopes
  */
 
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import * as createDebug from 'debug';
 import { NextFunction, Request, Response } from 'express';
 
-const debug = createDebug('sskts-api:middlewares:permitScopes');
+const debug = createDebug('cinerino-api:middlewares:permitScopes');
 
 /**
  * スコープインターフェース
@@ -39,7 +39,7 @@ export default (permittedScopes: IScope[]) => {
         try {
             debug('checking scope requirements...', permittedScopesWithResourceServerIdentifier);
             if (!isScopesPermitted(req.user.scopes, permittedScopesWithResourceServerIdentifier)) {
-                next(new sskts.factory.errors.Forbidden('scope requirements not satisfied'));
+                next(new cinerino.factory.errors.Forbidden('scope requirements not satisfied'));
             } else {
                 next();
             }

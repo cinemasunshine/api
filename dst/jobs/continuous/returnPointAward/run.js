@@ -11,15 +11,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ポイントインセンティブ返却
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
-    const authClient = new sskts.pecorinoapi.auth.ClientCredentials({
+    const taskRepo = new cinerino.repository.Task(connection);
+    const authClient = new cinerino.pecorinoapi.auth.ClientCredentials({
         domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
         clientId: process.env.PECORINO_CLIENT_ID,
         clientSecret: process.env.PECORINO_CLIENT_SECRET,
@@ -32,7 +32,7 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
         }
         count += 1;
         try {
-            yield sskts.service.task.executeByName(sskts.factory.taskName.ReturnPointAward)({
+            yield cinerino.service.task.executeByName(cinerino.factory.taskName.ReturnPointAward)({
                 taskRepo: taskRepo,
                 connection: connection,
                 pecorinoAuthClient: authClient

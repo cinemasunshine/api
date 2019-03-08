@@ -11,11 +11,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 注文配送
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 const connectMongo_1 = require("../../../connectMongo");
 exports.default = () => __awaiter(this, void 0, void 0, function* () {
     const connection = yield connectMongo_1.connectMongo({ defaultConnection: false });
-    const redisClient = sskts.redis.createClient({
+    const redisClient = cinerino.redis.createClient({
         host: process.env.REDIS_HOST,
         // tslint:disable-next-line:no-magic-numbers
         port: parseInt(process.env.REDIS_PORT, 10),
@@ -25,14 +25,14 @@ exports.default = () => __awaiter(this, void 0, void 0, function* () {
     let count = 0;
     const MAX_NUBMER_OF_PARALLEL_TASKS = 10;
     const INTERVAL_MILLISECONDS = 200;
-    const taskRepo = new sskts.repository.Task(connection);
+    const taskRepo = new cinerino.repository.Task(connection);
     setInterval(() => __awaiter(this, void 0, void 0, function* () {
         if (count > MAX_NUBMER_OF_PARALLEL_TASKS) {
             return;
         }
         count += 1;
         try {
-            yield sskts.service.task.executeByName(sskts.factory.taskName.SendOrder)({
+            yield cinerino.service.task.executeByName(cinerino.factory.taskName.SendOrder)({
                 taskRepo: taskRepo,
                 connection: connection,
                 redisClient: redisClient

@@ -1,7 +1,7 @@
 /**
  * 自分の口座ルーター
  */
-import * as sskts from '@motionpicture/sskts-domain';
+import * as cinerino from '@cinerino/domain';
 import { Router } from 'express';
 import { CREATED, NO_CONTENT } from 'http-status';
 import * as moment from 'moment';
@@ -13,7 +13,7 @@ import validator from '../../../../middlewares/validator';
 import * as redis from '../../../../../redis';
 
 const accountsRouter = Router();
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: <string>process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.PECORINO_CLIENT_ID,
     clientSecret: <string>process.env.PECORINO_CLIENT_SECRET,
@@ -36,27 +36,28 @@ accountsRouter.post(
     async (req, res, next) => {
         try {
             const now = new Date();
-            const accountNumberRepo = new sskts.repository.AccountNumber(redis.getClient());
-            const accountService = new sskts.pecorinoapi.service.Account({
+            const accountNumberRepo = new cinerino.repository.AccountNumber(redis.getClient());
+            const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
-            const account = await sskts.service.account.open({
-                name: req.body.name
+            const account = await cinerino.service.account.openWithoutOwnershipInfo({
+                name: req.body.name,
+                accountType: cinerino.factory.accountType.Point
             })({
                 accountNumber: accountNumberRepo,
                 accountService: accountService
             });
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
             // tslint:disable-next-line:max-line-length
-            const ownershipInfo: sskts.factory.ownershipInfo.IOwnershipInfo<sskts.factory.ownershipInfo.IGood<sskts.factory.ownershipInfo.AccountGoodType.Account>>
+            const ownershipInfo: cinerino.factory.ownershipInfo.IOwnershipInfo<cinerino.factory.ownershipInfo.IGood<cinerino.factory.ownershipInfo.AccountGoodType.Account>>
                 = {
                 id: '',
                 typeOf: 'OwnershipInfo',
                 // 十分にユニーク
-                identifier: `${sskts.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
+                identifier: `${cinerino.factory.pecorino.account.TypeOf.Account}-${req.user.username}-${account.accountNumber}`,
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
                     accountType: req.params.accountType,
                     accountNumber: account.accountNumber
                 },
@@ -86,10 +87,10 @@ accountsRouter.put(
     async (req, res, next) => {
         try {
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
                     accountType: req.params.accountType
                 },
                 ownedBy: {
@@ -98,10 +99,10 @@ accountsRouter.put(
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.params.accountNumber);
             if (accountOwnershipInfo === undefined) {
-                throw new sskts.factory.errors.NotFound('Account');
+                throw new cinerino.factory.errors.NotFound('Account');
             }
 
-            const accountService = new sskts.pecorinoapi.service.Account({
+            const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });
@@ -126,10 +127,10 @@ accountsRouter.get(
         try {
             const now = new Date();
             // 口座所有権を検索
-            const ownershipInfoRepo = new sskts.repository.OwnershipInfo(mongoose.connection);
-            const accountOwnershipInfos = await ownershipInfoRepo.search<sskts.factory.ownershipInfo.AccountGoodType.Account>({
+            const ownershipInfoRepo = new cinerino.repository.OwnershipInfo(mongoose.connection);
+            const accountOwnershipInfos = await ownershipInfoRepo.search<cinerino.factory.ownershipInfo.AccountGoodType.Account>({
                 typeOfGood: {
-                    typeOf: sskts.factory.ownershipInfo.AccountGoodType.Account,
+                    typeOf: cinerino.factory.ownershipInfo.AccountGoodType.Account,
                     accountType: req.query.accountType
                 },
                 ownedBy: {
@@ -140,10 +141,10 @@ accountsRouter.get(
             });
             const accountOwnershipInfo = accountOwnershipInfos.find((o) => o.typeOfGood.accountNumber === req.query.accountNumber);
             if (accountOwnershipInfo === undefined) {
-                throw new sskts.factory.errors.NotFound('Account');
+                throw new cinerino.factory.errors.NotFound('Account');
             }
 
-            const accountService = new sskts.pecorinoapi.service.Account({
+            const accountService = new cinerino.pecorinoapi.service.Account({
                 endpoint: <string>process.env.PECORINO_ENDPOINT,
                 auth: pecorinoAuthClient
             });

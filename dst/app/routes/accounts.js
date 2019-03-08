@@ -11,7 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * ポイント口座ルーター
  */
-const sskts = require("@motionpicture/sskts-domain");
+const cinerino = require("@cinerino/domain");
 // import * as createDebug from 'debug';
 const express_1 = require("express");
 const http_status_1 = require("http-status");
@@ -19,8 +19,8 @@ const authentication_1 = require("../middlewares/authentication");
 const permitScopes_1 = require("../middlewares/permitScopes");
 const validator_1 = require("../middlewares/validator");
 const accountsRouter = express_1.Router();
-// const debug = createDebug('sskts-api:routes:accounts');
-const pecorinoAuthClient = new sskts.pecorinoapi.auth.ClientCredentials({
+// const debug = createDebug('cinerino-api:routes:accounts');
+const pecorinoAuthClient = new cinerino.pecorinoapi.auth.ClientCredentials({
     domain: process.env.PECORINO_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.PECORINO_CLIENT_ID,
     clientSecret: process.env.PECORINO_CLIENT_SECRET,
@@ -38,11 +38,11 @@ accountsRouter.post('/transactions/deposit', permitScopes_1.default(['admin']), 
     next();
 }, validator_1.default, (req, res, next) => __awaiter(this, void 0, void 0, function* () {
     try {
-        const depositService = new sskts.pecorinoapi.service.transaction.Deposit({
+        const depositService = new cinerino.pecorinoapi.service.transaction.Deposit({
             endpoint: process.env.PECORINO_ENDPOINT,
             auth: pecorinoAuthClient
         });
-        yield sskts.service.account.deposit({
+        yield cinerino.service.account.deposit({
             toAccountNumber: req.body.toAccountNumber,
             agent: {
                 id: req.user.sub,

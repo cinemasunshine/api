@@ -1,8 +1,9 @@
 /**
  * Expressアプリケーション
  */
+import * as cinerino from '@cinerino/domain';
+
 import * as middlewares from '@motionpicture/express-middleware';
-import * as sskts from '@motionpicture/sskts-domain';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 import * as createDebug from 'debug';
@@ -17,7 +18,7 @@ import errorHandler from './middlewares/errorHandler';
 import notFoundHandler from './middlewares/notFoundHandler';
 import router from './routes/router';
 
-const debug = createDebug('sskts-api:*');
+const debug = createDebug('cinerino-api:*');
 
 const app = express();
 app.set('query parser', (str: any) => qs.parse(str, {
@@ -32,8 +33,8 @@ app.use(middlewares.basicAuth({ // ベーシック認証
     name: process.env.BASIC_AUTH_NAME,
     pass: process.env.BASIC_AUTH_PASS,
     unauthorizedHandler: (__, res, next) => {
-        res.setHeader('WWW-Authenticate', 'Basic realm="sskts-api Authentication"');
-        next(new sskts.factory.errors.Unauthorized());
+        res.setHeader('WWW-Authenticate', 'Basic realm="cinerino-api Authentication"');
+        next(new cinerino.factory.errors.Unauthorized());
     }
 }));
 
